@@ -476,6 +476,12 @@
                 if (event.key === 'Enter') {
                     this.closeKeyboard(); // Закрывает клавиатуру при нажатии Enter
                 }
+            },
+            handleClick(event) {
+                // Проверяем, был ли клик вне поля ввода
+                if (this.$refs.searchInput && !this.$refs.searchInput.contains(event.target)) {
+                    this.closeKeyboard(); // Закрывает клавиатуру
+                }
             }
         },
         mounted() {
@@ -486,13 +492,13 @@
             this.initWidget(); // Убедитесь, что виджет инициализируется после изменения параметров
 
             // Добавляем обработчик для закрытия клавиатуры при нажатии на экран
-            window.addEventListener('click', this.closeKeyboard);
+            window.addEventListener('click', this.handleClick);
         },
         beforeUnmount() {
             this.sockClose();
 
             // Удаляем обработчик при размонтировании компонента
-            window.removeEventListener('click', this.closeKeyboard);
+            window.removeEventListener('click', this.handleClick);
         },
         computed: {
             statusMsg() {
