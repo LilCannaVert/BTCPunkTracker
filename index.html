@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Binance Trade Punk</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -58,9 +58,6 @@
                 </div>
               </div>
             </Transition>
-            <div @click="toggleSettings" class="relative z-10 silver cursor-pointer">
-              <svg class="hover:fill-[--color-primary-blue]" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M24 13.616v-3.232c-1.651-.587-2.694-.752-3.219-2.019v-.001c-.527-1.271.1-2.134.847-3.707l-2.285-2.285c-1.561.742-2.433 1.375-3.707.847h-.001c-1.269-.526-1.435-1.576-2.019-3.219h-3.232c-.582 1.635-.749 2.692-2.019 3.219h-.001c-1.271.528-2.132-.098-3.707-.847l-2.285 2.285c.745 1.568 1.375 2.434.847 3.707-.527 1.271-1.584 1.438-3.219 2.02v3.232c1.632.58 2.692.749 3.219 2.019.53 1.282-.114 2.166-.847 3.707l2.285 2.286c1.562-.743 2.434-1.375 3.707-.847h.001c1.27.526 1.436 1.579 2.019 3.219h3.232c.582-1.636.75-2.69 2.027-3.222h.001c1.262-.524 2.12.101 3.698.851l2.285-2.286c-.744-1.563-1.375-2.433-.848-3.706.527-1.271 1.588-1.44 3.221-2.021zm-12 2.384c-2.209 0-4-1.791-4-4s1.791-4 4-4 4 1.791 4 4-1.791 4-4 4z"/></svg>
-            </div>
           </header>
             <div class="delimiter my-4"></div>
           
@@ -68,9 +65,14 @@
             <div class="flex gap-4 flex-col lg:flex-row">
               <div class="tickers w-full max-w-[500px] mx-auto"> <!-- Изменено: ширина теперь адаптивная -->
                 <div class="mb-2">
-                  <h2 class="text-glow font-bold text-xl">Ticker List</h2>
+                  <div class="flex items-center">
+                    <button @click="toggleOrderBookModal" class="bg-[--color-primary-blue] text-white px-2 py-1 rounded text-sm ml-2 font-rajdhani">
+                        Order Book
+                    </button>
+                    <h2 class="text-glow font-bold text-xl ml-2">Ticker List</h2>
+                  </div>
                   <div class="delimiter2 my-4"></div>
-                  <div class="cb flex items-center">
+                  <div class="cb flex items-center" style="max-height: 100px;"> <!-- Установите максимальную высоту на 100px -->
                     <div class="h-5 w-5 ml-3 mr-4">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21.172 24l-7.387-7.387c-1.388.874-3.024 1.387-4.785 1.387-4.971 0-9-4.029-9-9s4.029-9 9-9 9 4.029 9 9c0 1.761-.514 3.398-1.387 4.785l7.387 7.387-2.828 2.828zm-12.172-8c3.859 0 7-3.14 7-7s-3.141-7-7-7-7 3.14-7 7 3.141 7 7 7z"></path></svg>
                     </div>
@@ -120,18 +122,75 @@
               </div>
 
               <!-- TradingView Chart -->
-              <div class="chart flex-grow">
+              <div class="chart flex-grow mt-0">
                 <div class="flex items-center justify-between">
                   <h2 class="text-glow font-bold text-xl">Trading Chart</h2>
-                  <div @click="toggleSettings" class="relative z-10 silver cursor-pointer">
-                    <svg class="hover:fill-[--color-primary-blue]" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M24 13.616v-3.232c-1.651-.587-2.694-.752-3.219-2.019v-.001c-.527-1.271.1-2.134.847-3.707l-2.285-2.285c-1.561.742-2.433 1.375-3.707.847h-.001c-1.269-.526-1.435-1.576-2.019-3.219h-3.232c-.582 1.635-.749 2.692-2.019 3.219h-.001c-1.271.528-2.132-.098-3.707-.847l-2.285 2.285c.745 1.568 1.375 2.434.847 3.707-.527 1.271-1.584 1.438-3.219 2.02v3.232c1.632.58 2.692.749 3.219 2.019.53 1.282-.114 2.166-.847 3.707l2.285 2.286c1.562-.743 2.434-1.375 3.707-.847h.001c1.27.526 1.436 1.579 2.019 3.219h3.232c.582-1.636.75-2.69 2.027-3.222h.001c1.262-.524 2.12.101 3.698.851l2.285-2.286c-.744-1.563-1.375-2.433-.848-3.706.527-1.271 1.588-1.44 3.221-2.021zm-12 2.384c-2.209 0-4-1.791-4-4s1.791-4 4-4 4 1.791 4 4-1.791 4-4 4z"/></svg>
-                  </div>
                 </div>
                 <div class="delimiter2 my-4"></div>
-                <div class="cb relative" style="height: 650px; width: 100%;"> <!-- Изменено: увеличена высота графика -->
+                <div class="cb relative" style="height: 650px; width: 100%;">
                   <div :id="container_id" style="height: 100%; width: 100%;"></div>
                 </div>
               </div>
+
+              <!-- Модальное окно для Order Book -->
+              <div v-if="showOrderBookModal" id="orderBookModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                <div class="bg-[--color-bg--300] rounded-lg p-4 w-5/6 max-w-4xl">
+                  <div class="flex justify-between items-center">
+                    <h2 class="text-lg font-bold text-[--color-primary-silver]">Order Book</h2>
+                    <button @click="toggleOrderBookModal" class="text-red-500">Close</button>
+                  </div>
+                  <div class="mt-4">
+                    <div class="flex gap-4">
+                      <!-- Order Book Sale -->
+                      <div class="cb pr-4 pb-0 flex-1">
+                        <h3 class="text-glow font-bold text-lg">Order Book Sale</h3>
+                        <div class="flex gap-2 items-center h-8 px-2">
+                          <div class="flex flex-1 text-[--color-primary-green]">
+                            <div class="w-1/3">Total</div>
+                            <div class="w-1/3 text-center">Size</div>
+                            <div class="w-1/3 text-end">Price</div>
+                          </div>
+                        </div>
+                        <div class="relative overflow-y-scroll px-2 h-[150px]">
+                          <div class="flex gap-2 flex-row">
+                            <div class="flex-1">
+                              <div v-for="order in asks" :key="order[0]" class="flex gap-2" :style="`background: linear-gradient(to right, #ff000030 0 ${(order[2] / maxAsk) * 100}%, #ffffff00 ${(order[2] / maxAsk) * 100}% 100%)`">
+                                <div class="w-1/3 flex-1 text-left">${{ parseFloat(order[0]).toFixed(2) }}</div>
+                                <div class="w-1/3 flex-1 text-center text-[--color-primary-silver]">{{ parseFloat(order[1]).toFixed(4) }}</div>
+                                <div class="w-1/3 flex-1 text-end text-[--color-primary-silver]">{{ parseNumber((order[0] * order[1]), asset) }}</div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Order Book Buy -->
+                      <div class="cb pr-4 pb-0 flex-1">
+                        <h3 class="text-glow font-bold text-lg">Order Book Buy</h3>
+                        <div class="flex gap-2 items-center h-8 px-2">
+                          <div class="flex flex-1 text-[--color-primary-green]">
+                            <div class="w-1/3">Total</div>
+                            <div class="w-1/3 text-center">Size</div>
+                            <div class="w-1/3 text-end">Price</div>
+                          </div>
+                        </div>
+                        <div class="relative overflow-y-scroll px-2 h-[150px]">
+                          <div class="flex gap-2 flex-row">
+                            <div class="flex-1">
+                              <div v-for="order in bids" :key="order[0]" class="flex gap-2" :style="`background: linear-gradient(to left, #00ff0030 0 ${(order[2] / maxAsk) * 100}%, #ffffff00 ${(order[2] / maxAsk) * 100}% 100%)`">
+                                <div class="w-1/3 flex-1 text-[--color-primary-silver]">{{parseNumber((order[0] * order[1]), asset)}}</div>
+                                <div class="w-1/3 flex-1 text-center text-[--color-primary-silver]">{{parseFloat((order[1]))}}</div>
+                                <div class="w-1/3 flex-1 text-end text-[--color-primary-green]">{{parseFloat(order[0])}}</div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </section>
 
           <!-- Settings Modal -->
@@ -238,7 +297,8 @@
                             styles: {}
                         }
                     ],
-                }
+                },
+                showOrderBookModal: false, // Переменная для управления видимостью модального окна
             }
         },
         methods: {
@@ -249,8 +309,8 @@
                 this.showLatestTrades = !this.showLatestTrades;
             },
             startClock() {
-                this.digitalClock = new Date(Date.now()).toLocaleTimeString("en-GB");
-                setTimeout(() => { this.startClock() }, 250);
+                this.digitalClock = new Date().toLocaleTimeString();
+                setTimeout(() => { this.startClock() }, 1000);
             },
             sockInit() {
                 this.sock = new WebSocket('wss://stream.binance.com:9443/ws');
@@ -376,35 +436,38 @@
                 });
                 window.tvWidget = widget;
             },
-            prepareOrderBook() {
-                // Имитация данных ордербука
-                this.asks = [];
-                this.bids = [];
-                let currentPrice = 43150.50;
-                
-                // Генерация ордеров на продажу (asks)
-                for (let i = 0; i < 15; i++) {
-                    currentPrice += Math.random() * 2;
-                    let size = Math.random() * 2;
-                    let total = currentPrice * size;
-                    this.asks.push([currentPrice.toFixed(2), size.toFixed(4), total.toFixed(2)]);
+            async prepareOrderBook() {
+                await fetch('https://api.binance.com/api/v3/depth?symbol=' + this.ticker + '&limit=100')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Order Book Data:', data);
+                    this.asks = data.asks;
+                    this.bids = data.bids;
+
+                    for (let i = 0; i < this.asks.length; i++) {
+                        var arr = this.asks.map(x => {
+                            return Number(x[1]);
+                        });
+                        this.asks[i].push(arr.slice(0, i + 1).reduce((a, b) => a + b));
+                    }
+                    for (let i = 0; i < this.bids.length; i++) {
+                        var arr = this.bids.map(x => {
+                            return Number(x[1]);
+                        });
+                        this.bids[i].push(arr.slice(0, i + 1).reduce((a, b) => a + b));
+                    }
+                });
+
+                this.maxAsk = Math.max(...this.asks.map(x => { return x[2] }));
+                setTimeout(async () => { await this.prepareOrderBook() }, 500);
+            },
+            toggleOrderBookModal() {
+                this.showOrderBookModal = !this.showOrderBookModal;
+                if (this.showOrderBookModal) {
+                    document.body.classList.add('no-scroll'); // Добавляем класс для отключения прокрутки
+                } else {
+                    document.body.classList.remove('no-scroll'); // Убираем класс при закрытии
                 }
-                
-                currentPrice = 43150.50;
-                
-                // Генерация ордеров на покупку (bids)
-                for (let i = 0; i < 15; i++) {
-                    currentPrice -= Math.random() * 2;
-                    let size = Math.random() * 2;
-                    let total = currentPrice * size;
-                    this.bids.push([currentPrice.toFixed(2), size.toFixed(4), total.toFixed(2)]);
-                }
-                
-                // Находим максимальный объем для визуализации
-                this.maxAsk = Math.max(
-                    ...this.asks.map(order => parseFloat(order[2])),
-                    ...this.bids.map(order => parseFloat(order[2]))
-                );
             }
         },
         mounted() {
@@ -549,13 +612,21 @@
         color: var(--color-primary-silver);
     }
 
-    .cb {
+    .cb, .cb2 {
         position: relative;
         background-color: var(--color-bg--300);
-        border: 1px solid var(--color-primary--600);
         -webkit-clip-path: var(--ui-notch-path);
         clip-path: var(--ui-notch-path);
         padding-right: 0.5rem;
+        border: 2px solid var(--color-primary-purple); /* Установите цвет рамки по умолчанию */
+        box-shadow: 0 0 10px 4px rgba(128, 0, 128, 0.9); /* Постоянная неоновая фиолетовая рамка */
+    }
+
+    .cb:hover, .cb2:hover {
+        /* Уберите рамку при наведении, если она не нужна */
+        /* Можно оставить, если хотите изменить цвет при наведении */
+        /* border: 2px solid var(--color-primary-blue); */
+        /* box-shadow: 0 0 15px 5px rgba(128, 0, 128, 1); */
     }
 
     .cb::before {
@@ -579,21 +650,6 @@
     .cb-reverse::before {
         transform: rotate(45deg);
         left: -6px;
-    }
-
-    .cb2 {
-        position: relative;
-        background-color: var(--color-bg--300);
-        border: 1px solid var(--color-primary--600);
-        -webkit-clip-path: var(--ui-notch-path);
-        clip-path: var(--ui-notch-path);
-        padding-right: 0.5rem;
-    }
-
-    .cb2:hover, .cb2:hover::before, .cb2.active, .cb2.active::before {
-        border: 1px solid var(--color-primary-blue);
-        color: var(--color-primary-blue);
-        background-color: var(--color-secondary-blue);
     }
 
     .cb2::before {
@@ -705,6 +761,15 @@
     .orders .header > div,
     .orders .body > div {
         flex: 1; 
+    }
+
+    .no-scroll {
+        overflow: hidden; /* Отключает прокрутку */
+        height: 100%; /* Устанавливает высоту на 100% */
+    }
+
+    .font-rajdhani {
+        font-family: 'Rajdhani', sans-serif; /* Убедитесь, что шрифт Rajdhani используется */
     }
 </style>
 </body>
