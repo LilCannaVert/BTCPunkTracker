@@ -136,7 +136,7 @@
               <div v-if="showOrderBookModal" id="orderBookModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
                 <div class="bg-[--color-bg--300] rounded-lg p-4 w-5/6 max-w-4xl">
                   <div class="flex justify-between items-center">
-                    <h2 class="text-lg font-bold text-[--color-primary-silver]">Order Book</h2>
+                    <h2 class="text-lg font-bold text-[--color-primary-silver]">Order Book for {{ currentTicker }}</h2>
                     <button @click="toggleOrderBookModal" class="text-red-500">Close</button>
                   </div>
                   <div class="mt-4">
@@ -299,6 +299,7 @@
                     ],
                 },
                 showOrderBookModal: false, // Переменная для управления видимостью модального окна
+                currentTicker: '', // Переменная для хранения текущего тикера
             }
         },
         methods: {
@@ -385,6 +386,7 @@
             },
             changeTicker(symbol) {
                 this.ticker = symbol;
+                this.currentTicker = symbol;
                 this.options.symbol = 'BINANCE:' + symbol;
                 if (window.tvWidget) {
                     window.tvWidget.setSymbol('BINANCE:' + symbol);
@@ -478,7 +480,7 @@
                 }
             },
             handleClick(event) {
-                console.log('Screen clicked'); // Для проверки
+                // Проверяем, был ли клик вне поля ввода
                 if (this.$refs.searchInput && !this.$refs.searchInput.contains(event.target)) {
                     this.closeKeyboard(); // Закрывает клавиатуру
                 }
