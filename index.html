@@ -478,7 +478,7 @@
                 }
             },
             handleClick(event) {
-                // Проверяем, был ли клик вне поля ввода
+                console.log('Screen clicked'); // Для проверки
                 if (this.$refs.searchInput && !this.$refs.searchInput.contains(event.target)) {
                     this.closeKeyboard(); // Закрывает клавиатуру
                 }
