@@ -76,7 +76,7 @@
                     <div class="h-5 w-5 ml-3 mr-4">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21.172 24l-7.387-7.387c-1.388.874-3.024 1.387-4.785 1.387-4.971 0-9-4.029-9-9s4.029-9 9-9 9 4.029 9 9c0 1.761-.514 3.398-1.387 4.785l7.387 7.387-2.828 2.828zm-12.172-8c3.859 0 7-3.14 7-7s-3.141-7-7-7-7 3.14-7 7 3.141 7 7 7z"></path></svg>
                     </div>
-                    <input v-model="inputSearch" class="w-full h-10 bg-transparent focus:outline-none" name="query" placeholder="Search..." type="text">
+                    <input v-model="inputSearch" ref="searchInput" class="w-full h-10 bg-transparent focus:outline-none" name="query" placeholder="Search..." type="text" @keypress="handleKeyPress">
                   </div>
                 </div>
                 <div class="mb-2">
@@ -468,6 +468,14 @@
                 } else {
                     document.body.classList.remove('no-scroll'); // Убираем класс при закрытии
                 }
+            },
+            closeKeyboard() {
+                this.$refs.searchInput.blur(); // Закрывает клавиатуру
+            },
+            handleKeyPress(event) {
+                if (event.key === 'Enter') {
+                    this.closeKeyboard(); // Закрывает клавиатуру при нажатии Enter
+                }
             }
         },
         mounted() {
@@ -476,9 +484,15 @@
             this.appendScript(this.initWidget);
             this.prepareOrderBook();
             this.initWidget(); // Убедитесь, что виджет инициализируется после изменения параметров
+
+            // Добавляем обработчик для закрытия клавиатуры при нажатии на экран
+            window.addEventListener('click', this.closeKeyboard);
         },
-        unmounted() {
+        beforeUnmount() {
             this.sockClose();
+
+            // Удаляем обработчик при размонтировании компонента
+            window.removeEventListener('click', this.closeKeyboard);
         },
         computed: {
             statusMsg() {
