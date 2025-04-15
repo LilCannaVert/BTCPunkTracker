@@ -519,13 +519,11 @@
             },
             shareTicker(ticker) {
                 const selectedTickerData = this.tickers[ticker];
-                const telegramMessage = `${selectedTickerData.pair}, Price: ${selectedTickerData.close} @BTCPunkTradebot!`;
+                const formattedPrice = parseFloat(selectedTickerData.close).toFixed(3);
+                const telegramMessage = `${selectedTickerData.pair}, Price: ${formattedPrice} @BTCPunkTradebot!`;
                 const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(telegramMessage)}`;
                 
-                
                 window.open(telegramUrl, '_blank');
-                
-               
                 this.toggleShareModal();
             },
         },
