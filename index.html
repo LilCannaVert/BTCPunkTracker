@@ -290,7 +290,7 @@
                                 ticker.style,
                                 selectedTickers.includes(ticker.symbol) ? 'text-white' : ''
                             ]">
-                                {{ parseFloat(ticker.close).toFixed(4) }}
+                                {{ ticker.symbol.endsWith('BTC') ? parseFloat(ticker.close).toFixed(6) : parseFloat(ticker.close).toFixed(4) }}
                             </div>
                         </div>
                     </div>
@@ -594,7 +594,11 @@
                 
                 const tickersInfo = this.selectedTickers.map(symbol => {
                     const ticker = this.tickers[symbol];
-                    return `${ticker.pair}: ${parseFloat(ticker.close).toFixed(4)}`;
+                    // Определяем формат в зависимости от типа тикера
+                    const formattedPrice = symbol.endsWith('BTC') 
+                        ? parseFloat(ticker.close).toFixed(6) 
+                        : parseFloat(ticker.close).toFixed(4);
+                    return `${ticker.pair}: ${formattedPrice}`;
                 }).join('\n');
                 
                 const telegramMessage = `Selected Tickers:\n${tickersInfo}\n@BTCPunkTradebot!`;
