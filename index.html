@@ -63,7 +63,7 @@
           
           <section class="mb-4">
             <div class="flex gap-4 flex-col lg:flex-row">
-              <div class="tickers w-full max-w-[500px] mx-auto"> <!-- Изменено: ширина теперь адаптивная -->
+              <div class="tickers w-full max-w-[500px] mx-auto"> 
                 <div class="mb-2">
                   <div class="flex items-center">
                     <button @click="toggleOrderBookModal" class="bg-[--color-primary-blue] text-white px-2 py-1 rounded text-sm ml-2 font-rajdhani">
@@ -72,7 +72,7 @@
                     <h2 class="text-glow font-bold text-xl ml-2">Ticker List</h2>
                   </div>
                   <div class="delimiter2 my-4"></div>
-                  <div class="cb flex items-center" style="max-height: 100px;"> <!-- Установите максимальную высоту на 100px -->
+                  <div class="cb flex items-center" style="max-height: 100px;">
                     <div class="h-5 w-5 ml-3 mr-4">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21.172 24l-7.387-7.387c-1.388.874-3.024 1.387-4.785 1.387-4.971 0-9-4.029-9-9s4.029-9 9-9 9 4.029 9 9c0 1.761-.514 3.398-1.387 4.785l7.387 7.387-2.828 2.828zm-12.172-8c3.859 0 7-3.14 7-7s-3.141-7-7-7-7 3.14-7 7 3.141 7 7 7z"></path></svg>
                     </div>
@@ -80,12 +80,12 @@
                   </div>
                 </div>
                 <div class="mb-2">
-                    <ul class="flex gap-2 justify-between h-10 flex-wrap"> <!-- Изменено: добавлен flex-wrap для адаптивности -->
+                    <ul class="flex gap-2 justify-between h-10 flex-wrap"> 
                         <li @click="filterAsset('USDT')" :class="[asset === 'USDT' ? 'active' : '']" class="cb2 flex flex-grow items-center justify-center cursor-pointer">USDT</li>
                         <li @click="filterAsset('BTC')" :class="[asset === 'BTC' ? 'active' : '']" class="cb2 flex flex-grow items-center justify-center cursor-pointer">BTC</li>
                         <li @click="filterAsset('FAV')" :class="[asset === 'FAV' ? 'active' : '']" class="cb2 flex flex-grow items-center justify-center cursor-pointer">
                             FAV
-                            <span v-if="favorites.length > 0" class="text-[--color-primary-yellow]">★</span> <!-- Звезда, если есть избранные тикеры -->
+                            <span v-if="favorites.length > 0" class="text-[--color-primary-yellow]">★</span> 
                         </li>
                     </ul>
                 </div>
@@ -132,7 +132,7 @@
                 </div>
               </div>
 
-              <!-- Модальное окно для Order Book -->
+              
               <div v-if="showOrderBookModal" id="orderBookModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
                 <div class="bg-[--color-bg--300] rounded-lg p-4 w-5/6 max-w-4xl">
                   <div class="flex justify-between items-center">
@@ -218,7 +218,7 @@
                     </div>
                   </div>
                 </div>
-                <!-- Modal footer -->
+                
                 <div class="mt-10 flex gap-1 justify-center">
                   <div class="cb-style3">
                     <div data-modal-hide="staticModal" type="button" class="relative flex gap-2 items-center justify-center">
@@ -253,7 +253,7 @@
                 tickers: {},
                 cache: [],
                 trades: [],
-                favorites: ['BTCUSDT'],
+                favorites: JSON.parse(localStorage.getItem('favorites')) || ['BTCUSDT'],
                 interval: '1d',
                 digitalClock: null,
                 asks: [],
@@ -263,7 +263,7 @@
                 showSettings: false,
                 showLatestTrades: true,
                 inputSearch: '',
-                asset: 'USDT', // Начальный актив
+                asset: 'USDT', 
                 sort: 'assetVolume',
                 order: 'desc',
                 ticker: 'BTCUSDT',
@@ -298,8 +298,8 @@
                         }
                     ],
                 },
-                showOrderBookModal: false, // Переменная для управления видимостью модального окна
-                currentTicker: '', // Переменная для хранения текущего тикера
+                showOrderBookModal: false, 
+                currentTicker: '', 
             }
         },
         methods: {
@@ -398,11 +398,12 @@
                 } else {
                     this.favorites.push(symbol);
                 }
+                localStorage.setItem('favorites', JSON.stringify(this.favorites));
             },
             filterAsset(asset) {
-                this.asset = asset; // Устанавливаем актив
-                this.status = 1; // Обновляем статус
-                // Здесь можно добавить логику для обновления тикеров, если это необходимо
+                this.asset = asset; 
+                this.status = 1; 
+                
             },
             sortBy(field, order) {
                 this.sort = field;
@@ -432,8 +433,8 @@
             initWidget() {
                 const widget = new TradingView.widget({
                     container_id: this.container_id,
-                    width: '100%', // Изменено: ширина виджета
-                    height: '500px', // Изменено: высота виджета
+                    width: '100%', 
+                    height: '500px', 
                     ...this.options
                 });
                 window.tvWidget = widget;
@@ -466,23 +467,23 @@
             toggleOrderBookModal() {
                 this.showOrderBookModal = !this.showOrderBookModal;
                 if (this.showOrderBookModal) {
-                    document.body.classList.add('no-scroll'); // Добавляем класс для отключения прокрутки
+                    document.body.classList.add('no-scroll'); 
                 } else {
-                    document.body.classList.remove('no-scroll'); // Убираем класс при закрытии
+                    document.body.classList.remove('no-scroll'); 
                 }
             },
             closeKeyboard() {
-                this.$refs.searchInput.blur(); // Закрывает клавиатуру
+                this.$refs.searchInput.blur(); 
             },
             handleKeyPress(event) {
                 if (event.key === 'Enter') {
-                    this.closeKeyboard(); // Закрывает клавиатуру при нажатии Enter
+                    this.closeKeyboard(); 
                 }
             },
             handleClick(event) {
-                // Проверяем, был ли клик вне поля ввода
+                
                 if (this.$refs.searchInput && !this.$refs.searchInput.contains(event.target)) {
-                    this.closeKeyboard(); // Закрывает клавиатуру
+                    this.closeKeyboard(); 
                 }
             }
         },
@@ -491,15 +492,16 @@
             this.startClock();
             this.appendScript(this.initWidget);
             this.prepareOrderBook();
-            this.initWidget(); // Убедитесь, что виджет инициализируется после изменения параметров
+            this.initWidget(); 
+            this.favorites = JSON.parse(localStorage.getItem('favorites')) || ['BTCUSDT']; 
 
-            // Добавляем обработчик для закрытия клавиатуры при нажатии на экран
+            
             window.addEventListener('click', this.handleClick);
         },
         beforeUnmount() {
             this.sockClose();
 
-            // Удаляем обработчик при размонтировании компонента
+          
             window.removeEventListener('click', this.handleClick);
         },
         computed: {
@@ -578,26 +580,26 @@
     }
 
     body {
-        --color-bg--300: #1e181ef0; /* Цвет фона для элементов с низким приоритетом */
-        --color-bg--500: #191a1e; /* Основной цвет фона для всего тела страницы */
-        --color-primary--500: #e8615a; /* Основной цвет (например, для кнопок или акцентов) */
-        --color-primary--600: #7A0B7A; /* Темный оттенок основного цвета для теней или фона */
-        --color-primary-black: #0e0e18; /* Цвет, близкий к черному, для фона или текста */
-        --color-primary-red: #710000; /* Цвет для отображения падающих цен (красный) */
-        --color-primary-yellow: #FDF500; /* Цвет для акцентов или предупреждений (желтый) */
-        --color-primary-green: #1AC5B0; /* Цвет для отображения растущих цен (зеленый) */
-        --color-primary-blue: #37EBF3; /* Цвет для ссылок или акцентов (голубой) */
-        --color-primary-purple: #7A0B7A; /* Цвет для дополнительных акцентов (фиолетовый) */
-        --color-primary-pink1: #E455AE; /* Цвет для дополнительных акцентов (розовый) */
-        --color-primary-pink2: #CB1DCD; /* Цвет для дополнительных акцентов (светлый розовый) */
-        --color-primary-silver: #D1C5C0; /* Цвет для текста или элементов интерфейса (серебристый) */
-        --color-secondary-blue: #37EBF360; /* Полупрозрачный голубой цвет для второстепенных элементов */
+        --color-bg--300: #1e181ef0; 
+        --color-bg--500: #191a1e; 
+        --color-primary--500: #e8615a; 
+        --color-primary--600: #7A0B7A; 
+        --color-primary-black: #0e0e18; 
+        --color-primary-red: #710000; 
+        --color-primary-yellow: #FDF500;
+        --color-primary-green: #1AC5B0; 
+        --color-primary-blue: #37EBF3; 
+        --color-primary-purple: #7A0B7A;
+        --color-primary-pink1: #E455AE; 
+        --color-primary-pink2: #CB1DCD; 
+        --color-primary-silver: #D1C5C0; 
+        --color-secondary-blue: #37EBF360; 
     
-        margin: 0; /* Убирает отступы по умолчанию у body */
-        min-height: 100vh; /* Устанавливает минимальную высоту body на 100% высоты окна браузера */
-        background-color: var(--color-bg--500); /* Устанавливает цвет фона для body */
-        color: var(--color-primary-silver); /* Устанавливает цвет текста для body */
-        font-family: 'Orbitron', sans-serif; /* Устанавливает шрифт для текста в body */
+        margin: 0; 
+        min-height: 100vh; 
+        background-color: var(--color-bg--500);
+        color: var(--color-primary-silver); 
+        font-family: 'Orbitron', sans-serif; 
     }
 
     .text-glow {
@@ -606,7 +608,7 @@
 
     .delimiter {
         height: 1px;
-        background: var(--color-primary-purple); /* Изменено: цвет линии на фиолетовый */
+        background: var(--color-primary-purple); 
     }
 
     .delimiter2 {
@@ -640,15 +642,12 @@
         -webkit-clip-path: var(--ui-notch-path);
         clip-path: var(--ui-notch-path);
         padding-right: 0.5rem;
-        border: 2px solid var(--color-primary-purple); /* Установите цвет рамки по умолчанию */
-        box-shadow: 0 0 10px 4px rgba(128, 0, 128, 0.9); /* Постоянная неоновая фиолетовая рамка */
+        border: 2px solid var(--color-primary-purple); 
+        box-shadow: 0 0 10px 4px rgba(128, 0, 128, 0.9); 
     }
 
     .cb:hover, .cb2:hover {
-        /* Уберите рамку при наведении, если она не нужна */
-        /* Можно оставить, если хотите изменить цвет при наведении */
-        /* border: 2px solid var(--color-primary-blue); */
-        /* box-shadow: 0 0 15px 5px rgba(128, 0, 128, 1); */
+       
     }
 
     .cb::before {
@@ -743,8 +742,8 @@
     }
     
     .cb {
-        height: 100%; /* Убедитесь, что высота 100% */
-        width: 100%;  /* Убедитесь, что ширина 100% */
+        height: 100%; 
+        width: 100%;  
     }
 
     .overflow-y-scroll::-webkit-scrollbar {
@@ -786,12 +785,12 @@
     }
 
     .no-scroll {
-        overflow: hidden; /* Отключает прокрутку */
-        height: 100%; /* Устанавливает высоту на 100% */
+        overflow: hidden; 
+        height: 100%; 
     }
 
     .font-rajdhani {
-        font-family: 'Rajdhani', sans-serif; /* Убедитесь, что шрифт Rajdhani используется */
+        font-family: 'Rajdhani', sans-serif; 
     }
 </style>
 </body>
