@@ -247,19 +247,38 @@
           <div v-if="showShareModal" id="shareModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
             <div class="bg-[--color-bg--300] rounded-lg p-4 w-5/6 max-w-4xl">
                 <div class="flex justify-between items-center">
-                    <h2 class="text-lg font-bold text-[--color-primary-silver]">Share Ticker</h2>
+                    <h2 class="text-lg font-bold text-[--color-primary-silver]">Share Tickers</h2>
                     <button @click="toggleShareModal" class="bg-red-500 text-white px-4 py-2 rounded">Close</button>
                 </div>
                 <div class="mt-4">
-                    <select v-model="selectedTicker" class="w-full p-2 border rounded">
-                        <option value="" disabled selected>-- Choose Ticker --</option>
-                        <option v-for="ticker in filterTickers" :key="ticker.symbol" :value="ticker.symbol">
-                            {{ ticker.pair }} - Price: {{ parseFloat(ticker.close).toFixed(3) }}
-                        </option>
-                    </select>
+                    <input v-model="tickerSearch" placeholder="Search tickers..." class="w-full p-2 mb-4 border rounded bg-[--color-bg--500] text-white">
+                    <div class="grid grid-cols-4 gap-2 max-h-[400px] overflow-y-auto">
+                        <div v-for="ticker in filteredShareTickers" 
+                             :key="ticker.symbol" 
+                             @click="toggleSelectedTicker(ticker.symbol)"
+                             :class="[
+                                 'p-2 rounded cursor-pointer transition-colors',
+                                 selectedTickers.includes(ticker.symbol) 
+                                     ? 'bg-[--color-primary-purple] text-white' 
+                                     : 'bg-[--color-bg--500] hover:bg-[--color-primary-purple] hover:bg-opacity-50'
+                             ]">
+                            <div class="text-sm font-bold">{{ ticker.pair }}</div>
+                            <div :class="ticker.style">{{ parseFloat(ticker.close).toFixed(3) }}</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="mt-4 flex justify-end">
-                    <button @click="shareTicker(selectedTicker)" class="bg-[--color-primary-blue] text-white px-4 py-2 rounded">Share</button>
+                <div class="mt-4 flex justify-between items-center">
+                    <div class="text-sm">
+                        Selected: {{ selectedTickers.length }} tickers
+                    </div>
+                    <button @click="shareMultipleTickers" 
+                            :disabled="!selectedTickers.length"
+                            :class="[
+                                'bg-[--color-primary-blue] text-white px-4 py-2 rounded',
+                                !selectedTickers.length ? 'opacity-50 cursor-not-allowed' : ''
+                            ]">
+                        Share Selected
+                    </button>
                 </div>
             </div>
           </div>
@@ -324,7 +343,8 @@
                 showOrderBookModal: false, 
                 currentTicker: '', 
                 showShareModal: false,
-                selectedTicker: '',
+                selectedTickers: [],
+                tickerSearch: '',
             }
         },
         methods: {
@@ -517,13 +537,27 @@
             toggleShareModal() {
                 this.showShareModal = !this.showShareModal;
             },
-            shareTicker(ticker) {
-                const selectedTickerData = this.tickers[ticker];
-                const formattedPrice = parseFloat(selectedTickerData.close).toFixed(3);
-                const telegramMessage = `${selectedTickerData.pair}, Price: ${formattedPrice} @BTCPunkTradebot!`;
+            toggleSelectedTicker(symbol) {
+                const index = this.selectedTickers.indexOf(symbol);
+                if (index === -1) {
+                    this.selectedTickers.push(symbol);
+                } else {
+                    this.selectedTickers.splice(index, 1);
+                }
+            },
+            shareMultipleTickers() {
+                if (!this.selectedTickers.length) return;
+                
+                const tickersInfo = this.selectedTickers.map(symbol => {
+                    const ticker = this.tickers[symbol];
+                    return `${ticker.pair}: ${parseFloat(ticker.close).toFixed(3)}`;
+                }).join('\n');
+                
+                const telegramMessage = `Selected Tickers:\n${tickersInfo}\n@BTCPunkTradebot!`;
                 const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(telegramMessage)}`;
                 
                 window.open(telegramUrl, '_blank');
+                this.selectedTickers = [];
                 this.toggleShareModal();
             },
         },
@@ -585,6 +619,15 @@
             },
             latestTrades() {
                 return this.showLatestTrades ? this.trades : [];
+            },
+            filteredShareTickers() {
+                let tickers = Object.values(this.tickers);
+                if (this.tickerSearch) {
+                    tickers = tickers.filter(ticker => 
+                        ticker.pair.toLowerCase().includes(this.tickerSearch.toLowerCase())
+                    );
+                }
+                return tickers;
             }
         }
     }).mount('#app')
@@ -835,6 +878,23 @@
 
     select {
         color: black; 
+    }
+
+    .grid::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .grid::-webkit-scrollbar-track {
+        background: var(--color-bg--500);
+    }
+
+    .grid::-webkit-scrollbar-thumb {
+        background: var(--color-primary-purple);
+        border-radius: 3px;
+    }
+
+    .grid::-webkit-scrollbar-thumb:hover {
+        background: var(--color-primary-blue);
     }
 </style>
 </body>
