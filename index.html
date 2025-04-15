@@ -254,7 +254,7 @@
                     <select v-model="selectedTicker" class="w-full p-2 border rounded">
                         <option value="" disabled selected>-- Choose Ticker --</option>
                         <option v-for="ticker in filterTickers" :key="ticker.symbol" :value="ticker.symbol">
-                            {{ ticker.pair }} - Price: {{ ticker.close }}
+                            {{ ticker.pair }} - Price: {{ parseFloat(ticker.close).toFixed(3) }}
                         </option>
                     </select>
                 </div>
