@@ -69,6 +69,9 @@
                     <button @click="toggleOrderBookModal" class="bg-[--color-primary-blue] text-white px-2 py-1 rounded text-sm ml-2 font-rajdhani">
                         Order Book
                     </button>
+                    <button @click="openShareModal" class="bg-[--color-primary-blue] text-white px-2 py-1 rounded text-sm ml-2 font-rajdhani">
+                        Share
+                    </button>
                     <h2 class="text-glow font-bold text-xl ml-2">Ticker List</h2>
                   </div>
                   <div class="delimiter2 my-4"></div>
@@ -141,7 +144,7 @@
                   </div>
                   <div class="mt-4">
                     <div class="flex flex-col lg:flex-row gap-4">
-                      <!-- Order Book Sale -->
+                      
                       <div class="cb pr-4 pb-0 flex-1 overflow-hidden">
                         <h3 class="text-glow font-bold text-lg">Order Book Sale</h3>
                         <div class="flex gap-2 items-center h-8 px-2">
@@ -164,7 +167,7 @@
                         </div>
                       </div>
 
-                      <!-- Order Book Buy -->
+                      
                       <div class="cb pr-4 pb-0 flex-1 overflow-hidden">
                         <h3 class="text-glow font-bold text-lg">Order Book Buy</h3>
                         <div class="flex gap-2 items-center h-8 px-2">
@@ -240,6 +243,26 @@
               </div>
             </div>
           </div>
+
+          <div v-if="showShareModal" id="shareModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+            <div class="bg-[--color-bg--300] rounded-lg p-4 w-5/6 max-w-4xl">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-lg font-bold text-[--color-primary-silver]">Share Ticker</h2>
+                    <button @click="toggleShareModal" class="bg-red-500 text-white px-4 py-2 rounded">Close</button>
+                </div>
+                <div class="mt-4">
+                    <select v-model="selectedTicker" class="w-full p-2 border rounded">
+                        <option value="" disabled selected>-- Choose Ticker --</option>
+                        <option v-for="ticker in filterTickers" :key="ticker.symbol" :value="ticker.symbol">
+                            {{ ticker.pair }} - Price: {{ ticker.close }}
+                        </option>
+                    </select>
+                </div>
+                <div class="mt-4 flex justify-end">
+                    <button @click="shareTicker(selectedTicker)" class="bg-[--color-primary-blue] text-white px-4 py-2 rounded">Share</button>
+                </div>
+            </div>
+          </div>
         </div>
     </div>
 <script>
@@ -300,6 +323,8 @@
                 },
                 showOrderBookModal: false, 
                 currentTicker: '', 
+                showShareModal: false,
+                selectedTicker: '',
             }
         },
         methods: {
@@ -334,7 +359,7 @@
                 let data = JSON.parse(e.data);
                 if (Array.isArray(data)) {
                     data.forEach(ticker => {
-                        // Изменено: добавлено условие для фильтрации по активу
+                        
                         if (this.asset === 'BTC' && ticker.s.endsWith('BTC')) {
                             this.tickers[ticker.s] = {
                                 symbol: ticker.s,
@@ -485,7 +510,24 @@
                 if (this.$refs.searchInput && !this.$refs.searchInput.contains(event.target)) {
                     this.closeKeyboard(); 
                 }
-            }
+            },
+            openShareModal() {
+                this.showShareModal = true;
+            },
+            toggleShareModal() {
+                this.showShareModal = !this.showShareModal;
+            },
+            shareTicker(ticker) {
+                const selectedTickerData = this.tickers[ticker];
+                const telegramMessage = `${selectedTickerData.pair}, Price: ${selectedTickerData.close} @BTCPunkTradebot!`;
+                const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(telegramMessage)}`;
+                
+                
+                window.open(telegramUrl, '_blank');
+                
+               
+                this.toggleShareModal();
+            },
         },
         mounted() {
             this.sockInit();
@@ -521,15 +563,15 @@
             filterTickers() {
                 let tickers = Object.values(this.tickers);
         
-                // Фильтрация по избранным тикерам
+                
                 if (this.asset === 'FAV') {
                     tickers = tickers.filter(ticker => this.favorites.includes(ticker.symbol));
                 } else {
-                    // Фильтрация по текущему активу (USDT или BTC)
+                    
                     tickers = tickers.filter(ticker => ticker.symbol.includes(this.asset));
                 }
         
-                // Фильтрация по поисковому запросу
+                
                 if (this.inputSearch) {
                     tickers = tickers.filter(ticker => 
                         ticker.token.toLowerCase().includes(this.inputSearch.toLowerCase())
@@ -791,6 +833,10 @@
 
     .font-rajdhani {
         font-family: 'Rajdhani', sans-serif; 
+    }
+
+    select {
+        color: black; 
     }
 </style>
 </body>
