@@ -252,18 +252,23 @@
                 </div>
                 <div class="mt-4">
                     <input v-model="tickerSearch" placeholder="Search tickers..." class="w-full p-2 mb-4 border rounded bg-[--color-bg--500] text-white">
-                    <div class="grid grid-cols-4 gap-2 max-h-[400px] overflow-y-auto">
+                    <div class="grid grid-cols-4 gap-2 max-h-[400px] overflow-y-auto overflow-x-hidden">
                         <div v-for="ticker in filteredShareTickers" 
                              :key="ticker.symbol" 
                              @click="toggleSelectedTicker(ticker.symbol)"
                              :class="[
-                                 'p-2 rounded cursor-pointer transition-colors',
+                                 'p-2 rounded cursor-pointer transition-colors text-sm',
                                  selectedTickers.includes(ticker.symbol) 
                                      ? 'bg-[--color-primary-purple] text-white' 
                                      : 'bg-[--color-bg--500] hover:bg-[--color-primary-purple] hover:bg-opacity-50'
                              ]">
-                            <div class="text-sm font-bold">{{ ticker.pair }}</div>
-                            <div :class="ticker.style">{{ parseFloat(ticker.close).toFixed(3) }}</div>
+                            <div class="text-xs font-bold">{{ ticker.pair }}</div>
+                            <div :class="[
+                                ticker.style,
+                                selectedTickers.includes(ticker.symbol) ? 'text-white' : ''
+                            ]">
+                                {{ parseFloat(ticker.close).toFixed(4) }}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -531,18 +536,31 @@
                     this.closeKeyboard(); 
                 }
             },
+            toggleBodyScroll(disable) {
+                if (disable) {
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    document.body.style.overflow = 'auto';
+                }
+            },
             openShareModal() {
                 this.showShareModal = true;
+                this.toggleBodyScroll(true);
             },
             toggleShareModal() {
                 this.showShareModal = !this.showShareModal;
+                this.toggleBodyScroll(!this.showShareModal);
             },
             toggleSelectedTicker(symbol) {
                 const index = this.selectedTickers.indexOf(symbol);
                 if (index === -1) {
                     this.selectedTickers.push(symbol);
+                    const element = event.currentTarget;
+                    element.classList.add('selected-ticker');
                 } else {
                     this.selectedTickers.splice(index, 1);
+                    const element = event.currentTarget;
+                    element.classList.remove('selected-ticker');
                 }
             },
             shareMultipleTickers() {
@@ -550,7 +568,7 @@
                 
                 const tickersInfo = this.selectedTickers.map(symbol => {
                     const ticker = this.tickers[symbol];
-                    return `${ticker.pair}: ${parseFloat(ticker.close).toFixed(3)}`;
+                    return `${ticker.pair}: ${parseFloat(ticker.close).toFixed(4)}`;
                 }).join('\n');
                 
                 const telegramMessage = `Selected Tickers:\n${tickersInfo}\n@BTCPunkTradebot!`;
@@ -574,9 +592,8 @@
         },
         beforeUnmount() {
             this.sockClose();
-
-          
             window.removeEventListener('click', this.handleClick);
+            this.toggleBodyScroll(false);
         },
         computed: {
             statusMsg() {
@@ -895,6 +912,64 @@
 
     .grid::-webkit-scrollbar-thumb:hover {
         background: var(--color-primary-blue);
+    }
+
+    #shareModal .grid {
+        max-height: 60vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+        scrollbar-width: thin;
+        -ms-overflow-style: none;
+        padding-right: 10px;
+    }
+
+    #shareModal {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 50;
+    }
+
+    #shareModal .bg-[--color-bg--300] {
+        max-height: 90vh;
+        overflow: hidden;
+        width: 90%;
+        max-width: 900px;
+    }
+
+    .selected-ticker {
+        background-color: var(--color-primary-purple) !important;
+        color: white !important;
+        box-shadow: 0 0 10px var(--color-primary-purple);
+    }
+
+    .transition-colors {
+        transition: all 0.3s ease;
+    }
+
+    /* Добавляем эффект пульсации для выбранных тикеров */
+    .selected-ticker {
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(122, 11, 122, 0.7);
+        }
+        70% {
+            box-shadow: 0 0 0 10px rgba(122, 11, 122, 0);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(122, 11, 122, 0);
+        }
+    }
+
+   
+    .ticker-cell {
+        min-width: 120px; 
+        max-width: 200px; 
     }
 </style>
 </body>
