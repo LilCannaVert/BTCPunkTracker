@@ -374,6 +374,8 @@
                 selectedTickers: [],
                 tickerSearch: '',
                 shareAssetFilter: 'USDT',
+                tonPrice: null,
+                tonUpdateInterval: null,
             }
         },
         methods: {
@@ -393,6 +395,8 @@
                 this.sock.onmessage = this.sockMessage;
                 this.sock.onclose = this.sockClose;
                 this.sock.onerror = this.sockError;
+                this.updateTonPrice();
+                this.tonUpdateInterval = setInterval(() => this.updateTonPrice(), 30000);
             },
             sockOpen() {
                 this.status = 1;
@@ -408,7 +412,7 @@
                 let data = JSON.parse(e.data);
                 if (Array.isArray(data)) {
                     data.forEach(ticker => {
-                        // Обрабатываем все тикеры BTC
+                        
                         if (ticker.s.endsWith('BTC')) {
                             this.tickers[ticker.s] = {
                                 symbol: ticker.s,
@@ -594,7 +598,7 @@
                     return parseFloat(ticker.close).toFixed(2);
                 }
                 if (ticker.symbol.endsWith('BTC')) {
-                    return ticker.close; // Возвращаем полное число для BTC пар
+                    return ticker.close;
                 }
                 if (ticker.symbol.endsWith('USDT')) {
                     return parseFloat(ticker.close).toFixed(4);
@@ -611,7 +615,7 @@
                     if (symbol === 'BTCUSDT' || symbol === 'ETHUSDT') {
                         formattedPrice = parseFloat(ticker.close).toFixed(2);
                     } else if (symbol.endsWith('BTC')) {
-                        formattedPrice = ticker.close; // Полное число для BTC пар
+                        formattedPrice = ticker.close; 
                     } else if (symbol.endsWith('USDT')) {
                         formattedPrice = parseFloat(ticker.close).toFixed(4);
                     }
@@ -619,7 +623,7 @@
                     return `${ticker.pair}: ${formattedPrice}`;
                 }).join('\n');
                 
-                const telegramMessage = `Selected Tickers:\n${tickersInfo}\n@BTCPunkTradebot!`;
+                const telegramMessage = `Prices:\n${tickersInfo}\n@BTCPunkTradebot`;
                 const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(telegramMessage)}`;
                 
                 window.open(telegramUrl, '_blank');
@@ -627,13 +631,41 @@
                 this.toggleShareModal();
             },
             handleShareModalClick(event) {
-                // Закрываем клавиатуру
+                
                 if (this.$refs.tickerSearchInput) {
                     this.$refs.tickerSearchInput.blur();
                 }
             },
             shareFilterAsset(asset) {
                 this.shareAssetFilter = asset;
+            },
+            async updateTonPrice() {
+                try {
+                    const response = await fetch('https://tonapi.io/v2/rates?tokens=ton&currencies=usd');
+                    const data = await response.json();
+                    const price = data.rates.TON.prices.USD;
+                    const diff24h = data.rates.TON.diff_24h.USD.replace('%', '');
+                    
+                    this.tickers['TONUSDT'] = {
+                        symbol: 'TONUSDT',
+                        pair: 'TON/USDT',
+                        token: 'TON',
+                        asset: 'USDT',
+                        close: price.toFixed(8),
+                        open: price.toFixed(8), 
+                        high: price.toFixed(8), 
+                        low: price.toFixed(8),  
+                        volume: '0',          
+                        quoteVolume: '0',       
+                        tokenVolume: '0',     
+                        assetVolume: '0',      
+                        percent: parseFloat(diff24h),
+                        arrow: parseFloat(diff24h) >= 0 ? '↑' : '↓',
+                        style: parseFloat(diff24h) >= 0 ? 'text-[--color-primary-green]' : 'text-[--color-primary--500]'
+                    };
+                } catch (error) {
+                    console.error('Error fetching TON price:', error);
+                }
             },
         },
         mounted() {
@@ -650,6 +682,9 @@
         beforeUnmount() {
             this.sockClose();
             window.removeEventListener('click', this.handleClick);
+            if (this.tonUpdateInterval) {
+                clearInterval(this.tonUpdateInterval);
+            }
         },
         computed: {
             statusMsg() {
@@ -1013,7 +1048,6 @@
         transition: all 0.3s ease;
     }
 
-    /* Добавляем эффект пульсации для выбранных тикеров */
     .selected-ticker {
         animation: pulse 2s infinite;
     }
@@ -1030,10 +1064,9 @@
         }
     }
 
-    /* Стиль для ячеек с тикерами */
     .ticker-cell {
-        min-width: 120px; /* Минимальная ширина ячейки */
-        max-width: 200px; /* Максимальная ширина ячейки */
+        min-width: 120px; 
+        max-width: 200px; 
     }
 
     .cb2.active {
