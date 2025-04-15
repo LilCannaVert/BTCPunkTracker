@@ -290,7 +290,7 @@
                                 ticker.style,
                                 selectedTickers.includes(ticker.symbol) ? 'text-white' : ''
                             ]">
-                                {{ ticker.symbol.endsWith('BTC') ? parseFloat(ticker.close).toFixed(6) : parseFloat(ticker.close).toFixed(4) }}
+                                {{ formatTickerPrice(ticker) }}
                             </div>
                         </div>
                     </div>
@@ -589,15 +589,33 @@
                     element.classList.remove('selected-ticker');
                 }
             },
+            formatTickerPrice(ticker) {
+                if (ticker.symbol === 'BTCUSDT' || ticker.symbol === 'ETHUSDT') {
+                    return parseFloat(ticker.close).toFixed(2);
+                }
+                if (ticker.symbol.endsWith('BTC')) {
+                    return ticker.close; // Возвращаем полное число для BTC пар
+                }
+                if (ticker.symbol.endsWith('USDT')) {
+                    return parseFloat(ticker.close).toFixed(4);
+                }
+                return ticker.close;
+            },
             shareMultipleTickers() {
                 if (!this.selectedTickers.length) return;
                 
                 const tickersInfo = this.selectedTickers.map(symbol => {
                     const ticker = this.tickers[symbol];
-                    // Определяем формат в зависимости от типа тикера
-                    const formattedPrice = symbol.endsWith('BTC') 
-                        ? parseFloat(ticker.close).toFixed(6) 
-                        : parseFloat(ticker.close).toFixed(4);
+                    let formattedPrice;
+                    
+                    if (symbol === 'BTCUSDT' || symbol === 'ETHUSDT') {
+                        formattedPrice = parseFloat(ticker.close).toFixed(2);
+                    } else if (symbol.endsWith('BTC')) {
+                        formattedPrice = ticker.close; // Полное число для BTC пар
+                    } else if (symbol.endsWith('USDT')) {
+                        formattedPrice = parseFloat(ticker.close).toFixed(4);
+                    }
+                    
                     return `${ticker.pair}: ${formattedPrice}`;
                 }).join('\n');
                 
@@ -995,6 +1013,7 @@
         transition: all 0.3s ease;
     }
 
+    /* Добавляем эффект пульсации для выбранных тикеров */
     .selected-ticker {
         animation: pulse 2s infinite;
     }
@@ -1011,9 +1030,10 @@
         }
     }
 
+    /* Стиль для ячеек с тикерами */
     .ticker-cell {
-        min-width: 120px; 
-        max-width: 200px; 
+        min-width: 120px; /* Минимальная ширина ячейки */
+        max-width: 200px; /* Максимальная ширина ячейки */
     }
 
     .cb2.active {
