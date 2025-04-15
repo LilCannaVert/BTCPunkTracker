@@ -254,6 +254,23 @@
                     <button @click="toggleShareModal" class="bg-red-500 text-white px-4 py-2 rounded">Close</button>
                 </div>
                 <div class="mt-4">
+                    <div class="mb-4">
+                        <ul class="flex gap-2 justify-between h-10 flex-wrap"> 
+                            <li @click="shareFilterAsset('USDT')" 
+                                :class="['cb2 flex flex-grow items-center justify-center cursor-pointer', 
+                                        shareAssetFilter === 'USDT' ? 'active' : '']">USDT</li>
+                            <li @click="shareFilterAsset('BTC')" 
+                                :class="['cb2 flex flex-grow items-center justify-center cursor-pointer', 
+                                        shareAssetFilter === 'BTC' ? 'active' : '']">BTC</li>
+                            <li @click="shareFilterAsset('FAV')" 
+                                :class="['cb2 flex flex-grow items-center justify-center cursor-pointer', 
+                                        shareAssetFilter === 'FAV' ? 'active' : '']">
+                                FAV
+                                <span v-if="favorites.length > 0" class="text-[--color-primary-yellow]">★</span> 
+                            </li>
+                        </ul>
+                    </div>
+                    
                     <input v-model="tickerSearch" 
                            ref="tickerSearchInput"
                            placeholder="Search tickers..." 
@@ -356,6 +373,7 @@
                 showShareModal: false,
                 selectedTickers: [],
                 tickerSearch: '',
+                shareAssetFilter: 'USDT',
             }
         },
         methods: {
@@ -390,13 +408,13 @@
                 let data = JSON.parse(e.data);
                 if (Array.isArray(data)) {
                     data.forEach(ticker => {
-                        
-                        if (this.asset === 'BTC' && ticker.s.endsWith('BTC')) {
+                        // Обрабатываем все тикеры BTC
+                        if (ticker.s.endsWith('BTC')) {
                             this.tickers[ticker.s] = {
                                 symbol: ticker.s,
                                 pair: ticker.s.replace('BTC', '') + '/BTC',
                                 token: ticker.s.replace('BTC', ''),
-                                asset: this.asset,
+                                asset: 'BTC',
                                 close: parseFloat(ticker.c).toFixed(8),
                                 open: parseFloat(ticker.o).toFixed(8),
                                 high: parseFloat(ticker.h).toFixed(8),
@@ -409,12 +427,14 @@
                                 arrow: parseFloat(ticker.P) >= 0 ? '↑' : '↓',
                                 style: parseFloat(ticker.P) >= 0 ? 'text-[--color-primary-green]' : 'text-[--color-primary--500]'
                             }
-                        } else if (this.asset === 'USDT' && ticker.s.endsWith('USDT')) {
+                        }
+                        // Обрабатываем все тикеры USDT
+                        if (ticker.s.endsWith('USDT')) {
                             this.tickers[ticker.s] = {
                                 symbol: ticker.s,
                                 pair: ticker.s.replace('USDT', '') + '/USDT',
                                 token: ticker.s.replace('USDT', ''),
-                                asset: this.asset,
+                                asset: 'USDT',
                                 close: parseFloat(ticker.c).toFixed(8),
                                 open: parseFloat(ticker.o).toFixed(8),
                                 high: parseFloat(ticker.h).toFixed(8),
@@ -543,7 +563,7 @@
                 }
             },
             toggleBodyScroll(disable) {
-                if (disable) {
+                if (disable && this.showShareModal) {
                     document.body.style.overflow = 'hidden';
                 } else {
                     document.body.style.overflow = 'auto';
@@ -555,7 +575,7 @@
             },
             toggleShareModal() {
                 this.showShareModal = !this.showShareModal;
-                this.toggleBodyScroll(!this.showShareModal);
+                this.toggleBodyScroll(this.showShareModal);
             },
             toggleSelectedTicker(symbol) {
                 const index = this.selectedTickers.indexOf(symbol);
@@ -590,6 +610,9 @@
                     this.$refs.tickerSearchInput.blur();
                 }
             },
+            shareFilterAsset(asset) {
+                this.shareAssetFilter = asset;
+            },
         },
         mounted() {
             this.sockInit();
@@ -605,7 +628,6 @@
         beforeUnmount() {
             this.sockClose();
             window.removeEventListener('click', this.handleClick);
-            this.toggleBodyScroll(false);
         },
         computed: {
             statusMsg() {
@@ -651,11 +673,19 @@
             },
             filteredShareTickers() {
                 let tickers = Object.values(this.tickers);
+                
+                if (this.shareAssetFilter === 'FAV') {
+                    tickers = tickers.filter(ticker => this.favorites.includes(ticker.symbol));
+                } else {
+                    tickers = tickers.filter(ticker => ticker.symbol.endsWith(this.shareAssetFilter));
+                }
+                
                 if (this.tickerSearch) {
                     tickers = tickers.filter(ticker => 
                         ticker.pair.toLowerCase().includes(this.tickerSearch.toLowerCase())
                     );
                 }
+                
                 return tickers;
             }
         }
@@ -980,6 +1010,11 @@
     .ticker-cell {
         min-width: 120px; 
         max-width: 200px; 
+    }
+
+    .cb2.active {
+        background-color: var(--color-primary-purple);
+        color: white;
     }
 </style>
 </body>
