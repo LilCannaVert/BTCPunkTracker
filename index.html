@@ -124,7 +124,6 @@
                 </div>
               </div>
 
-              <!-- TradingView Chart -->
               <div class="chart flex-grow mt-0">
                 <div class="flex items-center justify-between">
                   <h2 class="text-glow font-bold text-xl">Trading Chart</h2>
@@ -432,7 +431,6 @@
                                 style: parseFloat(ticker.P) >= 0 ? 'text-[--color-primary-green]' : 'text-[--color-primary--500]'
                             }
                         }
-                        // Обрабатываем все тикеры USDT
                         if (ticker.s.endsWith('USDT')) {
                             this.tickers[ticker.s] = {
                                 symbol: ticker.s,
@@ -594,11 +592,11 @@
                 }
             },
             formatTickerPrice(ticker) {
-                if (ticker.symbol === 'BTCUSDT' || ticker.symbol === 'ETHUSDT') {
+                if (ticker.symbol === 'BTCUSDT' || ticker.symbol === 'ETHUSDT' || ticker.symbol === 'BNBUSDT') {
                     return parseFloat(ticker.close).toFixed(2);
                 }
                 if (ticker.symbol.endsWith('BTC')) {
-                    return ticker.close;
+                    return ticker.close; 
                 }
                 if (ticker.symbol.endsWith('USDT')) {
                     return parseFloat(ticker.close).toFixed(4);
@@ -612,7 +610,7 @@
                     const ticker = this.tickers[symbol];
                     let formattedPrice;
                     
-                    if (symbol === 'BTCUSDT' || symbol === 'ETHUSDT') {
+                    if (symbol === 'BTCUSDT' || symbol === 'ETHUSDT' || symbol === 'BNBUSDT') {
                         formattedPrice = parseFloat(ticker.close).toFixed(2);
                     } else if (symbol.endsWith('BTC')) {
                         formattedPrice = ticker.close; 
@@ -631,7 +629,7 @@
                 this.toggleShareModal();
             },
             handleShareModalClick(event) {
-                
+              
                 if (this.$refs.tickerSearchInput) {
                     this.$refs.tickerSearchInput.blur();
                 }
@@ -655,10 +653,10 @@
                         open: price.toFixed(8), 
                         high: price.toFixed(8), 
                         low: price.toFixed(8),  
-                        volume: '0',          
+                        volume: '0',            
                         quoteVolume: '0',       
-                        tokenVolume: '0',     
-                        assetVolume: '0',      
+                        tokenVolume: '0',      
+                        assetVolume: '0',     
                         percent: parseFloat(diff24h),
                         arrow: parseFloat(diff24h) >= 0 ? '↑' : '↓',
                         style: parseFloat(diff24h) >= 0 ? 'text-[--color-primary-green]' : 'text-[--color-primary--500]'
