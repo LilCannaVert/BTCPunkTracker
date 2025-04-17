@@ -75,6 +75,9 @@
                     <button @click="toggleCalculator" class="bg-[--color-primary-blue] text-white px-2 py-1 rounded text-sm ml-2 font-rajdhani">
                         Calculator
                     </button>
+                    <button @click="togglePortfolio" class="bg-[--color-primary-blue] text-white px-2 py-1 rounded text-sm ml-2 font-rajdhani">
+                        Portfolio
+                    </button>
                     <h2 class="text-glow font-bold text-xl ml-2"></h2>
                   </div>
                   <div class="delimiter2 my-4"></div>
@@ -148,7 +151,6 @@
                     <button @click="toggleOrderBookModal" class="bg-red-500 text-white px-4 py-2 rounded">Close</button>
                   </div>
                   
-                  <!-- Search Section -->
                   <div class="mt-4 mb-4">
                     <div class="form-group relative">
                         <div class="flex-grow relative">
@@ -160,7 +162,6 @@
                                 class="form-control bg-[--color-bg--500] text-white p-2 rounded w-full text-sm"
                                 placeholder="Search ticker..." />
                             
-                            <!-- Dropdown for filtered results -->
                             <div v-if="showOrderBookDropdown && filteredOrderBookCoins.length > 0" 
                                  class="absolute z-50 w-full mt-1 bg-[--color-bg--300] rounded-lg shadow-lg max-h-48 overflow-y-auto">
                                 <div v-for="ticker in filteredOrderBookCoins" 
@@ -228,9 +229,7 @@
             </div>
           </section>
 
-          <!-- Settings Modal -->
           <div v-if="showSettings" id="staticModal" class="bg-[#00000080] fixed flex items-center justify-center top-0 left-0 right-0 z-50 w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
-            <!-- Modal content -->
             <div class="relative w-full max-w-2xl max-h-full">
               <div class="relative">
                 <div class="flex">
@@ -343,7 +342,6 @@
             </div>
           </div>
 
-          <!-- Calculator Modal -->
           <div v-if="showCalculator" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
             <div class="bg-[--color-bg--300] rounded-lg p-3 w-full max-w-sm mx-4" @click.stop>
                 <div class="flex justify-between items-center mb-2 sticky top-0 bg-[--color-bg--300] z-10">
@@ -360,12 +358,132 @@
                 </div>
             </div>
           </div>
+
+          <div v-if="showPortfolio" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+            <div class="bg-[--color-bg--300] rounded-lg p-4 w-full max-w-2xl mx-4" @click.stop>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold text-[--color-primary-silver]">Portfolio</h2>
+                    <button @click="togglePortfolio" class="bg-red-500 text-white px-4 py-2 rounded">Close</button>
+                </div>
+
+ 
+                <div class="mb-6 bg-[--color-bg--500] p-4 rounded-lg">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                 
+                        <div class="form-group relative">
+                            <input
+                                v-model="portfolioForm.searchQuery"
+                                @input="filterPortfolioCoins"
+                                @focus="showPortfolioDropdown = true"
+                                type="text"
+                                class="form-control bg-[--color-bg--300] text-white p-2 rounded w-full text-sm"
+                                placeholder="Search coin..." />
+                            
+                            <div v-if="showPortfolioDropdown && filteredPortfolioCoins.length > 0" 
+                                 class="absolute z-50 w-full mt-1 bg-[--color-bg--300] rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                                <div v-for="ticker in filteredPortfolioCoins" 
+                                     :key="ticker.symbol"
+                                     @click="selectPortfolioCoin(ticker)"
+                                     class="p-2 hover:bg-[--color-primary-purple] cursor-pointer text-sm">
+                                    {{ ticker.pair }} ({{ formatTickerPrice(ticker) }})
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <input 
+                                v-model="portfolioForm.amount"
+                                type="number"
+                                min="0"
+                                step="0.00000001"
+                                class="form-control bg-[--color-bg--300] text-white p-2 rounded w-full text-sm"
+                                placeholder="Amount of coins" />
+                        </div>
+
+                        <div class="form-group">
+                            <input 
+                                v-model="portfolioForm.buyPrice"
+                                type="number"
+                                min="0"
+                                step="0.00000001"
+                                class="form-control bg-[--color-bg--300] text-white p-2 rounded w-full text-sm"
+                                placeholder="Buy price per coin" />
+                        </div>
+
+                        <!-- Add Button -->
+                        <div class="form-group flex items-end">
+                            <button @click="addPortfolioPosition" 
+                                    class="bg-[--color-primary-blue] text-white px-4 py-2 rounded text-sm w-full">
+                                Add Position
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Portfolio Positions -->
+                <div class="bg-[--color-bg--500] rounded-lg p-4">
+                    <div class="grid grid-cols-1 gap-3">
+                        <div v-for="(position, index) in portfolioPositions" 
+                             :key="index"
+                             class="bg-[--color-bg--300] p-3 rounded-lg">
+                            <div class="flex justify-between items-center">
+                                <div class="flex-1">
+                                    <div class="font-bold">{{ position.pair }}</div>
+                                    <div class="text-sm">
+                                        Amount: {{ position.amount }} coins
+                                        <span class="mx-2">|</span>
+                                        Buy Price: ${{ position.buyPrice }}
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div :class="position.profit >= 0 ? 'text-[--color-primary-green]' : 'text-[--color-primary--500]'" class="font-bold">
+                                        {{ position.profit >= 0 ? '+' : '' }}${{ position.profit.toFixed(2) }}
+                                    </div>
+                                    <div :class="position.profitPercent >= 0 ? 'text-[--color-primary-green]' : 'text-[--color-primary--500]'" class="text-sm">
+                                        {{ position.profitPercent >= 0 ? '+' : '' }}{{ position.profitPercent.toFixed(2) }}%
+                                    </div>
+                                </div>
+                                <button @click="removePosition(index)" class="ml-4 text-red-500 hover:text-red-700">
+                                    ✕
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Total Summary -->
+                    <div class="mt-6 bg-[--color-primary-purple] p-4 rounded-lg">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <div class="text-sm text-white">Total Investment:</div>
+                                <div class="text-lg font-bold text-white">${{ totalInvestment.toFixed(2) }}</div>
+                            </div>
+                            <div>
+                                <div class="text-sm text-white">Current Value:</div>
+                                <div class="text-lg font-bold" 
+                                     :class="totalProfit >= 0 ? 'text-[--color-primary-green]' : 'text-[--color-primary--500]'">
+                                    ${{ currentValue.toFixed(2) }}
+                                    <span class="text-sm ml-2">
+                                        ({{ totalProfit >= 0 ? '+' : '' }}{{ totalProfitPercent.toFixed(2) }}%)
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4 text-center">
+                            <div class="text-sm text-white">Total Profit/Loss:</div>
+                            <div class="text-xl font-bold" 
+                                 :class="totalProfit >= 0 ? 'text-[--color-primary-green]' : 'text-[--color-primary--500]'">
+                                {{ totalProfit >= 0 ? '+' : '' }}${{ totalProfit.toFixed(2) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+          </div>
         </div>
     </div>
 <script>
     const { createApp } = Vue
     
-    // Calculator component
     const CalculatorComponent = {
         props: ['settings', 'coins', 'tickers'],
         template: `
@@ -574,7 +692,6 @@
             }
         },
         mounted() {
-            // Close dropdown when clicking outside
             document.addEventListener('click', (e) => {
                 if (!e.target.closest('.form-group')) {
                     this.showDropdown = false;
@@ -642,8 +759,8 @@
                         }
                     ],
                 },
-                showOrderBookModal: false, 
-                currentTicker: '', 
+                showOrderBookModal: false,
+                currentTicker: '',
                 showShareModal: false,
                 selectedTickers: [],
                 tickerSearch: '',
@@ -661,7 +778,20 @@
                 coins: null,
                 orderBookSearchQuery: '',
                 showOrderBookDropdown: false,
-                filteredOrderBookCoins: []
+                filteredOrderBookCoins: [],
+                showPortfolio: false,
+                portfolioForm: {
+                    searchQuery: '',
+                    selectedCoin: null,
+                    amount: '',
+                    buyPrice: ''
+                },
+                portfolioPositions: [],
+                totalInvestment: 0,
+                currentValue: 0,
+                totalProfit: 0,
+                totalProfitPercent: 0,
+                lastUpdate: Date.now()
             }
         },
         methods: {
@@ -698,7 +828,6 @@
                 let data = JSON.parse(e.data);
                 if (Array.isArray(data)) {
                     data.forEach(ticker => {
-                        
                         if (ticker.s.endsWith('BTC')) {
                             this.tickers[ticker.s] = {
                                 symbol: ticker.s,
@@ -738,6 +867,16 @@
                             }
                         }
                     });
+
+                    if (Object.keys(this.tickers).length > 100 && this.portfolioPositions.length === 0) {
+
+                        this.loadState();
+                    }
+
+                    if (this.portfolioPositions.length > 0) {
+                        this.updatePortfolioTotals();
+                    }
+
                     this.status = 2;
                 }
             },
@@ -973,9 +1112,8 @@
                         return (symbol.includes(query) || pair.includes(query)) && 
                                ticker.symbol.endsWith('USDT');
                     })
-                    .slice(0, 5) // Limit to top 5 results
+                    .slice(0, 5)
                     .sort((a, b) => {
-                        // Exact matches first
                         const aExact = a.symbol.toLowerCase().startsWith(query);
                         const bExact = b.symbol.toLowerCase().startsWith(query);
                         if (aExact && !bExact) return -1;
@@ -988,7 +1126,6 @@
                 this.currentTicker = ticker.symbol;
                 this.ticker = ticker.symbol;
                 this.showOrderBookDropdown = false;
-                // Сразу обновляем Order Book и график
                 this.prepareOrderBook();
                 if (window.tvWidget) {
                     window.tvWidget.setSymbol('BINANCE:' + this.currentTicker);
@@ -999,6 +1136,184 @@
                     this.showOrderBookDropdown = false;
                 }
             },
+            togglePortfolio() {
+                this.showPortfolio = !this.showPortfolio;
+                if (this.showPortfolio) {
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    document.body.style.overflow = 'auto';
+                }
+            },
+            filterPortfolioCoins() {
+                const query = this.portfolioForm.searchQuery.toLowerCase();
+                this.filteredPortfolioCoins = Object.values(this.tickers)
+                    .filter(ticker => {
+                        const symbol = ticker.symbol.toLowerCase();
+                        const pair = ticker.pair.toLowerCase();
+                        return (symbol.includes(query) || pair.includes(query)) && 
+                               ticker.symbol.endsWith('USDT');
+                    })
+                    .slice(0, 5)
+                    .sort((a, b) => {
+                        const aExact = a.symbol.toLowerCase().startsWith(query);
+                        const bExact = b.symbol.toLowerCase().startsWith(query);
+                        if (aExact && !bExact) return -1;
+                        if (!aExact && bExact) return 1;
+                        return a.pair.localeCompare(b.pair);
+                    });
+            },
+            selectPortfolioCoin(ticker) {
+                this.portfolioForm.searchQuery = ticker.pair;
+                this.portfolioForm.selectedCoin = ticker;
+                this.showPortfolioDropdown = false;
+            },
+            addPortfolioPosition() {
+                if (!this.portfolioForm.selectedCoin || !this.portfolioForm.amount || !this.portfolioForm.buyPrice) {
+                    console.log('Cannot add position: missing data', this.portfolioForm);
+                    return;
+                }
+
+                const position = {
+                    symbol: this.portfolioForm.selectedCoin.symbol,
+                    pair: this.portfolioForm.selectedCoin.pair,
+                    amount: parseFloat(this.portfolioForm.amount),
+                    buyPrice: parseFloat(this.portfolioForm.buyPrice),
+                    currentPrice: 0,
+                    currentValue: 0,
+                    profit: 0,
+                    profitPercent: 0
+                };
+
+                console.log('Adding position to portfolio:', position);
+                this.portfolioPositions.push(position);
+                
+                this.saveState();
+
+                this.portfolioForm.searchQuery = '';
+                this.portfolioForm.selectedCoin = null;
+                this.portfolioForm.amount = '';
+                this.portfolioForm.buyPrice = '';
+
+
+                this.updatePortfolioTotals();
+            },
+            removePosition(index) {
+                this.portfolioPositions.splice(index, 1);
+                this.saveState(); 
+                this.updatePortfolioTotals();
+            },
+            saveState() {
+                try {
+
+                    const portfolioState = this.portfolioPositions.map(pos => ({
+                        symbol: pos.symbol,
+                        pair: pos.pair,
+                        amount: pos.amount,
+                        buyPrice: pos.buyPrice
+                    }));
+                    
+                    localStorage.setItem('portfolioState', JSON.stringify(portfolioState));
+                    console.log('Portfolio state saved:', portfolioState); 
+                } catch (error) {
+                    console.error('Error saving portfolio state:', error);
+                }
+            },
+            loadState() {
+                try {
+                    const savedState = localStorage.getItem('portfolioState');
+                    if (savedState) {
+                        const positions = JSON.parse(savedState);
+                        this.portfolioPositions = positions.map(pos => ({
+                            ...pos,
+                            currentPrice: 0,
+                            currentValue: 0,
+                            profit: 0,
+                            profitPercent: 0
+                        }));
+                        console.log('Portfolio state loaded:', this.portfolioPositions); 
+
+                        if (this.portfolioPositions.length > 0 && Object.keys(this.tickers).length > 0) {
+                            this.updatePortfolioTotals();
+                        }
+                    } else {
+                        console.log('No saved portfolio state found.'); 
+                        this.portfolioPositions = [];
+                    }
+                } catch (error) {
+                    console.error('Error loading portfolio state:', error);
+                    this.portfolioPositions = [];
+                }
+            },
+            updatePortfolioTotals() {
+                if (!this.portfolioPositions.length) {
+                    this.totalInvestment = 0;
+                    this.currentValue = 0;
+                    this.totalProfit = 0;
+                    this.totalProfitPercent = 0;
+                    return;
+                }
+
+                let totalInv = 0;
+                let currentVal = 0;
+
+                this.portfolioPositions = this.portfolioPositions.map(pos => {
+                    const ticker = this.tickers[pos.symbol];
+                    if (ticker) {
+                        const currentPrice = parseFloat(ticker.close);
+                        const currentValue = pos.amount * currentPrice;
+                        const investment = pos.amount * pos.buyPrice;
+                        const profit = currentValue - investment;
+                        const profitPercent = investment > 0 ? (profit / investment) * 100 : 0;
+
+                        totalInv += investment;
+                        currentVal += currentValue;
+
+                        return {
+                            ...pos,
+                            currentPrice,
+                            currentValue,
+                            investment,
+                            profit,
+                            profitPercent
+                        };
+                    }
+                    return pos;
+                });
+
+                this.totalInvestment = totalInv;
+                this.currentValue = currentVal;
+                this.totalProfit = this.currentValue - this.totalInvestment;
+                this.totalProfitPercent = this.totalInvestment > 0 ? (this.totalProfit / this.totalInvestment) * 100 : 0;
+            },
+            savePortfolio() {
+                console.log('Saving portfolio:', this.portfolio);
+                localStorage.setItem('cryptoPortfolio', JSON.stringify(this.portfolio));
+            },
+            loadPortfolio() {
+                const portfolioStr = localStorage.getItem('cryptoPortfolio');
+                if (portfolioStr) {
+                    this.portfolio = JSON.parse(portfolioStr);
+                    console.log('Loaded portfolio:', this.portfolio);
+                } else {
+                    console.log('No portfolio found in localStorage.');
+                }
+            },
+            onSockData(e) {
+                let data = JSON.parse(e.data) || [];
+                let tickersUpdated = false;
+
+                for (let item of data) {
+                    let c = this.getCoinData(item);
+                    this.tickers[c.symbol] = c;
+                    tickersUpdated = true;
+                }
+
+                if (tickersUpdated && this.portfolioPositions.length > 0) {
+                    this.updatePortfolioTotals();
+                }
+
+                this.status = 2;
+            }
         },
         mounted() {
             this.sockInit();
@@ -1007,8 +1322,18 @@
             this.prepareOrderBook();
             this.initWidget(); 
             this.favorites = JSON.parse(localStorage.getItem('favorites')) || ['BTCUSDT']; 
-
             
+            setTimeout(() => {
+                this.loadState();
+                console.log('Delayed portfolio loading executed');
+            }, 2000);
+
+            setInterval(() => {
+                if (this.portfolioPositions.length > 0 && Object.keys(this.tickers).length > 0) {
+                    this.updatePortfolioTotals();
+                }
+            }, 1000);
+
             window.addEventListener('click', this.handleClick);
 
             // Load saved calculator settings
