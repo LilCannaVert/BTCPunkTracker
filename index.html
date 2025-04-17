@@ -11,11 +11,10 @@
 </head>
 <body>
     <div id="app">
-        <div class="relative p-4">
-          <header class="flex relative h-14 gap-4 items-center justify-between px-2 text-sm lg:text-xl">
+        <div class="relative p-2">
+          <header class="flex relative h-10 gap-2 items-center justify-between px-1 text-sm lg:text-xl">
             <div class="flex items-center">
-              <div :class="[status === 0 ? 'red' : 'green']" class="status mx-3"> </div>
-              <div class="clock">{{ digitalClock }}</div>
+
             </div>
             
             <Transition>
@@ -27,9 +26,9 @@
             </Transition>
            
             <Transition>
-              <div v-if="tickers[ticker]" class="flex gap-2 flex-grow items-center justify-between delay-200">
+              <div v-if="tickers[ticker]" class="flex gap-1 flex-grow items-center justify-between delay-200">
                 <div class="w-1/2">
-                  <div class="flex gap-2">
+                  <div class="flex gap-1">
                     <small>{{tickers[ticker]['pair']}}</small>
                     <span :class="tickers[ticker]['style']">
                       <span class="mr-1">{{tickers[ticker]['arrow']}}</span>
@@ -59,40 +58,25 @@
               </div>
             </Transition>
           </header>
-            <div class="delimiter my-4"></div>
+            <div class="delimiter my-2"></div>
           
-          <section class="mb-4">
-            <div class="flex gap-4 flex-col lg:flex-row">
+          <section class="mb-2">
+            <div class="flex gap-2 flex-col lg:flex-row">
               <div class="tickers w-full max-w-[500px] mx-auto"> 
-                <div class="mb-2">
+                <div class="mb-1">
                   <div class="flex items-center">
-                    <button @click="toggleChartScreen" class="bg-[--color-primary-blue] text-white px-2 py-1 rounded text-sm ml-2 font-rajdhani">
-                        Chart
-                    </button>
-                    <button @click="toggleOrderBookModal" class="bg-[--color-primary-blue] text-white px-2 py-1 rounded text-sm ml-2 font-rajdhani">
-                        Order Book
-                    </button>
-                    <button @click="openShareModal" class="bg-[--color-primary-blue] text-white px-2 py-1 rounded text-sm ml-2 font-rajdhani">
-                        Share
-                    </button>
-                    <button @click="toggleCalculator" class="bg-[--color-primary-blue] text-white px-2 py-1 rounded text-sm ml-2 font-rajdhani">
-                        Calculator
-                    </button>
-                    <button @click="togglePortfolio" class="bg-[--color-primary-blue] text-white px-2 py-1 rounded text-sm ml-2 font-rajdhani">
-                        Portfolio
-                    </button>
                     <h2 class="text-glow font-bold text-xl ml-2"></h2>
                   </div>
-                  <div class="delimiter2 my-4"></div>
-                  <div class="cb flex items-center" style="max-height: 100px;">
+                  <div class="delimiter2 my-2"></div>
+                  <div class="cb flex items-center" style="max-height: 80px;">
                     <div class="h-5 w-5 ml-3 mr-4">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21.172 24l-7.387-7.387c-1.388.874-3.024 1.387-4.785 1.387-4.971 0-9-4.029-9-9s4.029-9 9-9 9 4.029 9 9c0 1.761-.514 3.398-1.387 4.785l7.387 7.387-2.828 2.828zm-12.172-8c3.859 0 7-3.14 7-7s-3.141-7-7-7-7 3.14-7 7 3.141 7 7 7z"></path></svg>
                     </div>
-                    <input v-model="inputSearch" ref="searchInput" class="w-full h-10 bg-transparent focus:outline-none" name="query" placeholder="Search..." type="text" @keypress="handleKeyPress">
+                    <input v-model="inputSearch" ref="searchInput" class="w-full h-8 bg-transparent focus:outline-none" name="query" placeholder="Search..." type="text" @keypress="handleKeyPress">
                   </div>
                 </div>
-                <div class="mb-2">
-                    <ul class="flex gap-2 justify-between h-10 flex-wrap"> 
+                <div class="mb-1">
+                    <ul class="flex gap-2 justify-between h-8 flex-wrap"> 
                         <li @click="filterAsset('USDT')" :class="[asset === 'USDT' ? 'active' : '']" class="cb2 flex flex-grow items-center justify-center cursor-pointer">USDT</li>
                         <li @click="filterAsset('BTC')" :class="[asset === 'BTC' ? 'active' : '']" class="cb2 flex flex-grow items-center justify-center cursor-pointer">BTC</li>
                         <li @click="filterAsset('FAV')" :class="[asset === 'FAV' ? 'active' : '']" class="cb2 flex flex-grow items-center justify-center cursor-pointer">
@@ -109,7 +93,7 @@
                     <div @click="sortBy('assetVolume', 'desc')" :class="[sort === 'assetVolume' ? 'font-bold' : '']" class="w-1/4 text-end pl-2 pr-8">Volume</div>
                   </div>
       
-                  <div class="body h-[454px] relative overflow-y-scroll px-2">
+                  <div class="body h-[490px] relative overflow-y-scroll px-2">
                     <div v-if="Object.keys(tickers).length < 200" class="h-full flex items-center justify-center">
                       <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -164,25 +148,7 @@
               <div v-if="showChartScreen" class="chart-screen-overlay">
                 <div class="chart-screen-content">
                   <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-lg font-bold text-[--color-primary-silver]"> {{ currentTicker }}</h2>
-                  </div>
-                  
-                  <div class="flex flex-wrap gap-2 mb-4">
-                    <button @click="toggleOrderBookModal" class="bg-[--color-primary-blue] text-white px-2 py-1 rounded text-sm font-rajdhani">
-                      Order Book
-                    </button>
-                    <button @click="openShareModal" class="bg-[--color-primary-blue] text-white px-2 py-1 rounded text-sm font-rajdhani">
-                      Share
-                    </button>
-                    <button @click="toggleCalculator" class="bg-[--color-primary-blue] text-white px-2 py-1 rounded text-sm font-rajdhani">
-                      Calculator
-                    </button>
-                    <button @click="togglePortfolio" class="bg-[--color-primary-blue] text-white px-2 py-1 rounded text-sm font-rajdhani">
-                      Portfolio
-                    </button>
-                    <button @click="toggleChartScreen" class="bg-[--color-primary-blue] text-white px-2 py-1 rounded text-sm font-rajdhani">
-                      Tickers
-                    </button>
+                    <h2 class="text-lg font-bold text-[--color-primary-silver]">{{ currentTicker }}</h2>
                   </div>
                   
                   <div class="cb relative flex-grow" style="width: 100%;">
@@ -358,7 +324,7 @@
                            ref="tickerSearchInput"
                            placeholder="Search tickers..." 
                            class="w-full p-2 mb-4 border rounded bg-[--color-bg--500] text-white">
-                    <div class="grid grid-cols-4 gap-2 max-h-[400px] overflow-y-auto overflow-x-hidden">
+                    <div class="grid grid-cols-4 gap-2 max-h-[250px] overflow-y-auto overflow-x-hidden">
                         <div v-for="ticker in filteredShareTickers" 
                              :key="ticker.symbol" 
                              @click="toggleSelectedTicker(ticker.symbol)"
@@ -378,7 +344,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="mt-4 flex justify-between items-center">
+                <div class="mt-4 flex justify-between items-center pb-4">
                     <div class="text-sm">
                         Selected: {{ selectedTickers.length }} tickers
                     </div>
@@ -394,7 +360,6 @@
             </div>
           </div>
 
-          <!-- Calculator Modal -->
           <div v-if="showCalculator" id="calculatorModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
             <div class="bg-[--color-bg--300] rounded-lg p-3 w-full max-w-sm mx-4" @click.stop>
                 <div class="flex justify-between items-center mb-2 sticky top-0 bg-[--color-bg--300] z-10">
@@ -412,7 +377,6 @@
             </div>
           </div>
 
-          <!-- Portfolio Modal -->
           <div v-if="showPortfolio" id="portfolioModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
             <div class="bg-[--color-bg--300] rounded-lg p-4 w-full max-w-2xl mx-4" @click.stop>
                 <div class="flex justify-between items-center mb-4">
@@ -420,10 +384,9 @@
                     <button @click="togglePortfolio" class="bg-red-500 text-white px-4 py-2 rounded">Close</button>
                 </div>
 
-                <!-- Add Position Form -->
                 <div class="mb-6 bg-[--color-bg--500] p-4 rounded-lg">
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <!-- Coin Selection -->
+
                         <div class="form-group relative">
                             <input
                                 v-model="portfolioForm.searchQuery"
@@ -433,7 +396,6 @@
                                 class="form-control bg-[--color-bg--300] text-white p-2 rounded w-full text-sm"
                                 placeholder="Search coin..." />
                             
-                            <!-- Dropdown for filtered results -->
                             <div v-if="showPortfolioDropdown && filteredPortfolioCoins.length > 0" 
                                  class="absolute z-50 w-full mt-1 bg-[--color-bg--300] rounded-lg shadow-lg max-h-48 overflow-y-auto">
                                 <div v-for="ticker in filteredPortfolioCoins" 
@@ -445,7 +407,6 @@
                             </div>
                         </div>
 
-                        <!-- Amount -->
                         <div class="form-group">
                             <input 
                                 v-model="portfolioForm.amount"
@@ -456,7 +417,6 @@
                                 placeholder="Amount of coins" />
                         </div>
 
-                        <!-- Buy Price -->
                         <div class="form-group">
                             <input 
                                 v-model="portfolioForm.buyPrice"
@@ -467,7 +427,6 @@
                                 placeholder="Buy price per coin" />
                         </div>
 
-                        <!-- Add Button -->
                         <div class="form-group flex items-end">
                             <button @click="addPortfolioPosition" 
                                     class="bg-[--color-primary-blue] text-white px-4 py-2 rounded text-sm w-full">
@@ -477,7 +436,6 @@
                     </div>
                 </div>
 
-                <!-- Portfolio Positions -->
                 <div class="bg-[--color-bg--500] rounded-lg p-4">
                     <div class="grid grid-cols-1 gap-3">
                         <div v-for="(position, index) in portfolioPositions" 
@@ -507,7 +465,6 @@
                         </div>
                     </div>
 
-                    <!-- Total Summary -->
                     <div class="mt-6 bg-[--color-primary-purple] p-4 rounded-lg">
                         <div class="grid grid-cols-2 gap-4">
                             <div>
@@ -537,11 +494,35 @@
             </div>
           </div>
         </div>
+
+        <div class="fixed bottom-0 left-0 right-0 bg-[--color-primary-black] border-t-2 border-[--color-primary-purple] z-[150] py-3">
+          <div class="container mx-auto flex justify-center">
+            <button v-if="!showChartScreen" @click="toggleChartScreen" class="nav-button bg-[--color-primary-blue] text-white rounded font-rajdhani">
+              Chart
+            </button>
+            <button v-else @click="toggleChartScreen" class="nav-button bg-[--color-primary-blue] text-white rounded font-rajdhani">
+              Tickers
+            </button>
+            <button @click="toggleOrderBookModal" class="nav-button bg-[--color-primary-blue] text-white rounded font-rajdhani">
+              Order Book
+            </button>
+            <button @click="openShareModal" class="nav-button bg-[--color-primary-blue] text-white rounded font-rajdhani">
+              Share
+            </button>
+            <button @click="toggleCalculator" class="nav-button bg-[--color-primary-blue] text-white rounded font-rajdhani">
+              Calculator
+            </button>
+            <button @click="togglePortfolio" class="nav-button bg-[--color-primary-blue] text-white rounded font-rajdhani">
+              Portfolio
+            </button>
+          </div>
+        </div>
+
+        <div class="pb-40"></div>
     </div>
 <script>
     const { createApp } = Vue
     
-    // Calculator component
     const CalculatorComponent = {
         props: ['settings', 'coins', 'tickers'],
         template: `
@@ -750,6 +731,7 @@
             }
         },
         mounted() {
+
             document.addEventListener('click', (e) => {
                 if (!e.target.closest('.form-group')) {
                     this.showDropdown = false;
@@ -865,10 +847,6 @@
             toggleLatestTrades() {
                 this.showLatestTrades = !this.showLatestTrades;
             },
-            startClock() {
-                this.digitalClock = new Date().toLocaleTimeString();
-                setTimeout(() => { this.startClock() }, 1000);
-            },
             sockInit() {
                 this.sock = new WebSocket('wss://stream.binance.com:9443/ws');
                 this.sock.onopen = this.sockOpen;
@@ -932,12 +910,16 @@
                         }
                     });
 
-                    if (Object.keys(this.tickers).length > 100 && this.portfolioPositions.length === 0) {
-                        this.loadState();
-                    }
+                    if (Object.keys(this.tickers).length > 0) {
 
-                    if (this.portfolioPositions.length > 0) {
-                        this.updatePortfolioTotals();
+                        if (this.portfolioPositions.length === 0) {
+                            console.log('Tickers received, trying to load portfolio');
+                            this.loadState();
+                        }
+                        
+                        if (this.portfolioPositions.length > 0) {
+                            this.updatePortfolioTotals();
+                        }
                     }
 
                     this.status = 2;
@@ -960,12 +942,14 @@
                 }
                 
                 if (this.showChartScreen && this.fullscreenChartInstance) {
+
                     try {
                         this.fullscreenChartInstance.setSymbol('BINANCE:' + symbol, () => {
                             console.log('Chart symbol updated to', symbol);
                         });
                     } catch (e) {
                         console.error('Error updating chart symbol:', e);
+
                         this.$nextTick(() => {
                             this.initFullscreenChart();
                         });
@@ -1048,6 +1032,7 @@
                 this.showOrderBookModal = !this.showOrderBookModal;
                 if (this.showOrderBookModal) {
                     document.body.classList.add('no-scroll'); 
+
                     if (this.showChartScreen) {
                         setTimeout(() => {
                             const orderBookModal = document.getElementById('orderBookModal');
@@ -1082,6 +1067,7 @@
             openShareModal() {
                 this.showShareModal = true;
                 this.toggleBodyScroll(true);
+
                 if (this.showChartScreen) {
                     setTimeout(() => {
                         const shareModal = document.getElementById('shareModal');
@@ -1092,6 +1078,7 @@
             toggleShareModal() {
                 this.showShareModal = !this.showShareModal;
                 this.toggleBodyScroll(this.showShareModal);
+                // Если открыто поверх Chart
                 if (this.showShareModal && this.showChartScreen) {
                     setTimeout(() => {
                         const shareModal = document.getElementById('shareModal');
@@ -1189,6 +1176,7 @@
                 this.showCalculator = !this.showCalculator;
                 if (this.showCalculator) {
                     document.body.style.overflow = 'hidden';
+
                     if (this.showChartScreen) {
                         setTimeout(() => {
                             const calculatorModal = document.getElementById('calculatorModal');
@@ -1226,6 +1214,7 @@
                 this.currentTicker = ticker.symbol;
                 this.ticker = ticker.symbol;
                 this.showOrderBookDropdown = false;
+
                 this.prepareOrderBook();
                 if (window.tvWidget) {
                     window.tvWidget.setSymbol('BINANCE:' + this.currentTicker);
@@ -1240,6 +1229,7 @@
                 this.showPortfolio = !this.showPortfolio;
                 if (this.showPortfolio) {
                     document.body.style.overflow = 'hidden';
+
                     if (this.showChartScreen) {
                         setTimeout(() => {
                             const portfolioModal = document.getElementById('portfolioModal');
@@ -1310,15 +1300,20 @@
             saveState() {
                 try {
 
+                    if (!Array.isArray(this.portfolioPositions)) {
+                        console.error('portfolioPositions is not an array:', this.portfolioPositions);
+                        return;
+                    }
+                    
                     const portfolioState = this.portfolioPositions.map(pos => ({
                         symbol: pos.symbol,
                         pair: pos.pair,
-                        amount: pos.amount,
-                        buyPrice: pos.buyPrice
+                        amount: parseFloat(pos.amount),  // Убедимся, что это числа
+                        buyPrice: parseFloat(pos.buyPrice)
                     }));
                     
                     localStorage.setItem('portfolioState', JSON.stringify(portfolioState));
-                    console.log('Portfolio state saved:', portfolioState); 
+                    console.log('Portfolio state saved with', portfolioState.length, 'positions:', portfolioState);
                 } catch (error) {
                     console.error('Error saving portfolio state:', error);
                 }
@@ -1327,21 +1322,45 @@
                 try {
                     const savedState = localStorage.getItem('portfolioState');
                     if (savedState) {
-                        const positions = JSON.parse(savedState);
-                        this.portfolioPositions = positions.map(pos => ({
-                            ...pos,
-                            currentPrice: 0,
-                            currentValue: 0,
-                            profit: 0,
-                            profitPercent: 0
-                        }));
-                        console.log('Portfolio state loaded:', this.portfolioPositions); 
-                        
-                        if (this.portfolioPositions.length > 0 && Object.keys(this.tickers).length > 0) {
-                            this.updatePortfolioTotals();
+                        try {
+                            const positions = JSON.parse(savedState);
+                            
+                            if (!Array.isArray(positions)) {
+                                console.error('Saved portfolio data is not an array:', positions);
+                                return;
+                            }
+                            
+                            if (positions.length > 0) {
+                                this.portfolioPositions = positions.map(pos => ({
+                                    symbol: pos.symbol,
+                                    pair: pos.pair,
+                                    amount: parseFloat(pos.amount),
+                                    buyPrice: parseFloat(pos.buyPrice),
+                                    currentPrice: 0,
+                                    currentValue: 0,
+                                    profit: 0,
+                                    profitPercent: 0
+                                }));
+                                
+                                console.log('Portfolio state loaded with', this.portfolioPositions.length, 'positions:', this.portfolioPositions);
+                                
+                                // Сразу обновляем расчеты после загрузки, если тикеры доступны
+                                if (Object.keys(this.tickers).length > 0) {
+                                    console.log('Tickers available, updating portfolio calculations');
+                                    this.updatePortfolioTotals();
+                                } else {
+                                    console.log('Tickers not yet available, will update when received');
+                                }
+                            } else {
+                                console.log('Saved portfolio state is empty array');
+                                this.portfolioPositions = [];
+                            }
+                        } catch (jsonError) {
+                            console.error('Error parsing saved portfolio state:', jsonError);
+                            this.portfolioPositions = [];
                         }
                     } else {
-                        console.log('No saved portfolio state found.'); 
+                        console.log('No saved portfolio state found in localStorage');
                         this.portfolioPositions = [];
                     }
                 } catch (error) {
@@ -1430,6 +1449,7 @@
                 }
             },
             handleChartModalClick(event) {
+
                 if (event.target.id === 'chartModal') {
                     this.toggleChartModal();
                 }
@@ -1440,6 +1460,7 @@
                 const container = document.getElementById(chartContainerId);
                 
                 if (container && window.TradingView) {
+
                     if (this.chartModalInstance) {
                         this.chartModalInstance.remove();
                         this.chartModalInstance = null;
@@ -1470,15 +1491,18 @@
             setTimeframe(timeframe) {
                 this.currentTimeframe = timeframe;
                 if (this.chartModalInstance) {
+
                     this.chartModalInstance.setInterval(timeframe);
                 }
             },
             setChartTimeframe(timeframe) {
                 this.currentTimeframe = timeframe;
                 if (this.chartModalInstance) {
+
                     this.chartModalInstance.setInterval(timeframe);
                 }
             },
+
             toggleChartScreen() {
                 this.showChartScreen = !this.showChartScreen;
                 if (this.showChartScreen) {
@@ -1491,7 +1515,7 @@
                     
                     this.updateModalZIndexes(true);
                 } else {
-  
+
                     document.body.classList.remove('modal-open');
                     
                     this.updateModalZIndexes(false);
@@ -1583,15 +1607,18 @@
         },
         mounted() {
             this.sockInit();
-            this.startClock();
             this.appendScript(this.initWidget);
             this.prepareOrderBook();
             this.initWidget(); 
             this.favorites = JSON.parse(localStorage.getItem('favorites')) || ['BTCUSDT']; 
             
+            this.loadState();
+            
             setTimeout(() => {
-                this.loadState();
-                console.log('Delayed portfolio loading executed');
+                if (this.portfolioPositions.length === 0) {
+                    console.log('Trying to load portfolio state again after delay');
+                    this.loadState();
+                }
             }, 2000);
 
             setInterval(() => {
@@ -1602,13 +1629,11 @@
 
             window.addEventListener('click', this.handleClick);
 
-            // Load saved calculator settings
             const savedSettings = localStorage.getItem('calcSettings');
             if (savedSettings) {
                 this.calcSettings = JSON.parse(savedSettings);
             }
             
-            // Get coins data
             axios.get('https://api.coinranking.com/v1/public/coins?base=USD&timePeriod=24h').then(response => {
                 this.coins = response.data.data.coins;
             });
@@ -1937,6 +1962,7 @@
         height: 100%;
         width: 100%;
         padding: 1rem;
+        padding-bottom: 100px; 
         display: flex;
         flex-direction: column;
     }
@@ -1945,7 +1971,7 @@
         background-color: var(--color-bg--300);
         border: 2px solid var(--color-primary-purple);
         box-shadow: 0 0 10px 4px rgba(128, 0, 128, 0.9);
-        height: calc(100vh - 120px);
+        height: calc(100vh - 250px); 
     }
     
     body.modal-open {
@@ -1961,12 +1987,10 @@
         z-index: 200 !important;
     }
     
-    /* Стили для модальных окон на Chart */
     body.modal-open .modal-on-chart {
         pointer-events: auto;
     }
     
-    /* Создаем небольшую тень для модальных окон на Chart */
     .chart-screen-overlay + .modal-on-chart > div {
         box-shadow: 0 0 25px rgba(0, 0, 0, 0.8);
         border: 2px solid var(--color-primary-purple);
@@ -1998,7 +2022,7 @@
     }
 
     #shareModal .grid {
-        max-height: 60vh;
+        max-height: 40vh; 
         overflow-y: auto;
         overflow-x: hidden;
         scrollbar-width: thin;
@@ -2010,13 +2034,15 @@
         position: fixed;
         inset: 0;
         display: flex;
-        align-items: center;
+        align-items: flex-start; 
         justify-content: center;
         z-index: 50;
+        padding-top: 5vh; 
+        padding-bottom: 120px; 
     }
 
     #shareModal .bg-[--color-bg--300] {
-        max-height: 90vh;
+        max-height: 70vh; 
         overflow: hidden;
         width: 90%;
         max-width: 900px;
@@ -2056,6 +2082,100 @@
     .cb2.active {
         background-color: var(--color-primary-purple);
         color: white;
+    }
+    
+    .fixed.bottom-0 {
+        background-color: var(--color-bg--300);
+        box-shadow: 0 -4px 15px rgba(122, 11, 122, 0.5);
+        padding: 18px 0; 
+    }
+    
+    .nav-button {
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        font-weight: 600; 
+        border: 1px solid var(--color-primary-blue);
+        box-shadow: 0 0 5px var(--color-primary-blue);
+        clip-path: var(--ui-notch-path);
+        min-width: 90px;
+        max-width: 90px;
+        min-height: 60px; 
+        padding: 1.25rem 0; 
+        font-size: 1rem; 
+        margin: 0 3px;
+        text-align: center;
+        line-height: 1.2;
+    }
+    
+    .nav-button:hover {
+        background-color: var(--color-primary-purple);
+        box-shadow: 0 0 15px var(--color-primary-blue);
+        transform: translateY(-3px);
+        border-color: var(--color-primary-purple);
+    }
+    
+    .nav-button:active {
+        transform: translateY(1px);
+        box-shadow: 0 0 8px var(--color-primary-purple);
+    }
+    
+    @media (max-width: 640px) {
+        .fixed.bottom-0 .container {
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .nav-button {
+            min-width: 70px;
+            max-width: 70px;
+            min-height: 40px; 
+            margin: 2px;
+            font-size: 0.75rem; 
+            padding: 0.5rem 0; 
+        }
+    }
+    
+    @media (max-width: 375px) {
+        .nav-button {
+            min-width: 60px;
+            max-width: 60px;
+            min-height: 36px;
+            font-size: 0.7rem; 
+            padding: 0.45rem 0;
+        }
+    }
+
+    body.modal-open .fixed.bottom-0 {
+        pointer-events: auto;
+    }
+
+    .chart-screen-content {
+        margin-top: -9px;
+    }
+
+    #portfolioModal {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: flex-start; 
+        justify-content: center;
+        z-index: 50;
+        padding-top: 5vh; 
+        padding-bottom: 140px; 
+    }
+
+    #portfolioModal .bg-[--color-bg--300] {
+        max-height: 65vh; 
+        overflow: auto; 
+        width: 90%;
+        max-width: 900px;
+    }
+    
+    #portfolioModal .mt-6 {
+        margin-bottom: 15px; 
     }
 </style>
 </body>
