@@ -14,6 +14,7 @@
         <div class="relative p-2">
           <header class="flex relative h-10 gap-2 items-center justify-between px-1 text-sm lg:text-xl">
             <div class="flex items-center">
+
             </div>
             
             <Transition>
@@ -246,6 +247,7 @@
           </section>
 
           <div v-if="showSettings" id="staticModal" class="bg-[#00000080] fixed flex items-center justify-center top-0 left-0 right-0 z-50 w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+
             <div class="relative w-full max-w-2xl max-h-full">
               <div class="relative">
                 <div class="flex">
@@ -376,55 +378,56 @@
           </div>
 
           <div v-if="showPortfolio" id="portfolioModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-            <div class="bg-[--color-bg--300] rounded-lg p-4 w-full max-w-2xl mx-4" @click.stop>
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-lg font-bold text-[--color-primary-silver]">Portfolio</h2>
-                    <button @click="togglePortfolio" class="bg-red-500 text-white px-4 py-2 rounded">Close</button>
+            <div class="bg-[--color-bg--300] rounded-lg p-3 w-full max-w-xl mx-4" @click.stop>
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-base font-bold text-[--color-primary-silver]">Portfolio</h2>
+                    <button @click="togglePortfolio" class="bg-red-500 text-white px-3 py-1 rounded text-sm">Close</button>
                 </div>
 
-                <div class="mb-4 bg-[--color-primary-purple] p-4 rounded-lg">
-                    <div class="grid grid-cols-2 gap-4">
+                <div class="mb-2 bg-[--color-primary-purple] p-3 rounded-lg">
+                    <div class="grid grid-cols-2 gap-2">
                         <div>
-                            <div class="text-sm text-white">Total Investment:</div>
-                            <div class="text-lg font-bold text-white">${{ totalInvestment.toFixed(2) }}</div>
+                            <div class="text-xs text-white">Total Investment:</div>
+                            <div class="text-base font-bold text-white">${{ totalInvestment.toFixed(2) }}</div>
                         </div>
                         <div>
-                            <div class="text-sm text-white">Current Value:</div>
-                            <div class="text-lg font-bold" 
+                            <div class="text-xs text-white">Current Value:</div>
+                            <div class="text-base font-bold" 
                                  :class="totalProfit >= 0 ? 'text-[--color-primary-green]' : 'text-[--color-primary--500]'">
                                 ${{ currentValue.toFixed(2) }}
-                                <span class="text-sm ml-2">
+                                <span class="text-xs ml-2">
                                     ({{ totalProfit >= 0 ? '+' : '' }}{{ totalProfitPercent.toFixed(2) }}%)
                                 </span>
                             </div>
                         </div>
                     </div>
-                    <div class="mt-4 text-center">
-                        <div class="text-sm text-white">Total Profit/Loss:</div>
-                        <div class="text-xl font-bold" 
+                    <div class="mt-2 text-center">
+                        <div class="text-xs text-white">Total Profit/Loss:</div>
+                        <div class="text-lg font-bold" 
                              :class="totalProfit >= 0 ? 'text-[--color-primary-green]' : 'text-[--color-primary--500]'">
                             {{ totalProfit >= 0 ? '+' : '' }}${{ totalProfit.toFixed(2) }}
                         </div>
                     </div>
                 </div>
 
-                <div class="mb-4 bg-[--color-bg--500] p-4 rounded-lg">
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="mb-2 bg-[--color-bg--500] p-3 rounded-lg">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
+
                         <div class="form-group relative">
                             <input
                                 v-model="portfolioForm.searchQuery"
                                 @input="filterPortfolioCoins"
                                 @focus="showPortfolioDropdown = true"
                                 type="text"
-                                class="form-control bg-[--color-bg--300] text-white p-2 rounded w-full text-sm"
+                                class="form-control bg-[--color-bg--300] text-white p-1 rounded w-full text-sm"
                                 placeholder="Search coin..." />
                             
                             <div v-if="showPortfolioDropdown && filteredPortfolioCoins.length > 0" 
-                                 class="absolute z-50 w-full mt-1 bg-[--color-bg--300] rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                                 class="absolute z-50 w-full mt-1 bg-[--color-bg--300] rounded-lg shadow-lg max-h-36 overflow-y-auto">
                                 <div v-for="ticker in filteredPortfolioCoins" 
                                      :key="ticker.symbol"
                                      @click="selectPortfolioCoin(ticker)"
-                                     class="p-2 hover:bg-[--color-primary-purple] cursor-pointer text-sm">
+                                     class="p-1 hover:bg-[--color-primary-purple] cursor-pointer text-xs">
                                     {{ ticker.pair }} ({{ formatTickerPrice(ticker) }})
                                 </div>
                             </div>
@@ -436,7 +439,7 @@
                                 type="number"
                                 min="0"
                                 step="0.00000001"
-                                class="form-control bg-[--color-bg--300] text-white p-2 rounded w-full text-sm"
+                                class="form-control bg-[--color-bg--300] text-white p-1 rounded w-full text-sm"
                                 placeholder="Amount of coins" />
                         </div>
 
@@ -446,42 +449,42 @@
                                 type="number"
                                 min="0"
                                 step="0.00000001"
-                                class="form-control bg-[--color-bg--300] text-white p-2 rounded w-full text-sm"
+                                class="form-control bg-[--color-bg--300] text-white p-1 rounded w-full text-sm"
                                 placeholder="Buy price per coin" />
                         </div>
 
                         <div class="form-group flex items-end">
                             <button @click="addPortfolioPosition" 
-                                    class="bg-[--color-primary-blue] text-white px-4 py-2 rounded text-sm w-full">
+                                    class="bg-[--color-primary-blue] text-white px-3 py-1 rounded text-sm w-full">
                                 Add Position
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-[--color-bg--500] rounded-lg p-4">
-                    <div style="height: 300px; overflow-y: scroll; padding-right: 4px;" class="portfolio-positions-container">
+                <div class="bg-[--color-bg--500] rounded-lg p-3">
+                    <div style="height: 150px; overflow-y: scroll; padding-right: 4px;" class="portfolio-positions-container">
                         <div v-for="(position, index) in portfolioPositions" 
                              :key="index"
-                             class="bg-[--color-bg--300] p-3 rounded-lg mb-3">
+                             class="bg-[--color-bg--300] p-2 rounded-lg mb-2">
                             <div class="flex justify-between items-center">
                                 <div class="flex-1">
-                                    <div class="font-bold">{{ position.pair }}</div>
-                                    <div class="text-sm">
+                                    <div class="font-bold text-sm">{{ position.pair }}</div>
+                                    <div class="text-xs">
                                         Amount: {{ position.amount }} coins
-                                        <span class="mx-2">|</span>
+                                        <span class="mx-1">|</span>
                                         Buy Price: ${{ position.buyPrice }}
                                     </div>
                                 </div>
                                 <div class="text-right">
-                                    <div :class="position.profit >= 0 ? 'text-[--color-primary-green]' : 'text-[--color-primary--500]'" class="font-bold">
+                                    <div :class="position.profit >= 0 ? 'text-[--color-primary-green]' : 'text-[--color-primary--500]'" class="font-bold text-sm">
                                         {{ position.profit >= 0 ? '+' : '' }}${{ position.profit.toFixed(2) }}
                                     </div>
-                                    <div :class="position.profitPercent >= 0 ? 'text-[--color-primary-green]' : 'text-[--color-primary--500]'" class="text-sm">
+                                    <div :class="position.profitPercent >= 0 ? 'text-[--color-primary-green]' : 'text-[--color-primary--500]'" class="text-xs">
                                         {{ position.profitPercent >= 0 ? '+' : '' }}{{ position.profitPercent.toFixed(2) }}%
                                     </div>
                                 </div>
-                                <button @click="removePosition(index)" class="ml-4 text-red-500 hover:text-red-700">
+                                <button @click="removePosition(index)" class="ml-2 text-red-500 hover:text-red-700 text-sm">
                                     ✕
                                 </button>
                             </div>
@@ -666,6 +669,7 @@
                     })
                     .slice(0, 5) 
                     .sort((a, b) => {
+
                         const aExact = a.symbol.toLowerCase().startsWith(query);
                         const bExact = b.symbol.toLowerCase().startsWith(query);
                         if (aExact && !bExact) return -1;
@@ -727,6 +731,7 @@
             }
         },
         mounted() {
+
             document.addEventListener('click', (e) => {
                 if (!e.target.closest('.form-group')) {
                     this.showDropdown = false;
@@ -906,6 +911,7 @@
                     });
 
                     if (Object.keys(this.tickers).length > 0) {
+
                         if (this.portfolioPositions.length === 0) {
                             console.log('Tickers received, trying to load portfolio');
                             this.loadState();
@@ -936,12 +942,14 @@
                 }
                 
                 if (this.showChartScreen && this.fullscreenChartInstance) {
+
                     try {
                         this.fullscreenChartInstance.setSymbol('BINANCE:' + symbol, () => {
                             console.log('Chart symbol updated to', symbol);
                         });
                     } catch (e) {
                         console.error('Error updating chart symbol:', e);
+
                         this.$nextTick(() => {
                             this.initFullscreenChart();
                         });
@@ -1021,17 +1029,23 @@
                 setTimeout(async () => { await this.prepareOrderBook() }, 500);
             },
             toggleOrderBookModal() {
-                this.showOrderBookModal = !this.showOrderBookModal;
                 if (this.showOrderBookModal) {
-                    document.body.classList.add('no-scroll'); 
+
+                    this.showOrderBookModal = false;
+                    document.body.classList.remove('no-scroll');
+                } else {
+
+                    this.closeAllModals();
+                    
+                    this.showOrderBookModal = true;
+                    document.body.classList.add('no-scroll');
+                    
                     if (this.showChartScreen) {
                         setTimeout(() => {
                             const orderBookModal = document.getElementById('orderBookModal');
                             if (orderBookModal) orderBookModal.classList.add('modal-on-chart');
                         }, 0);
                     }
-                } else {
-                    document.body.classList.remove('no-scroll'); 
                 }
             },
             closeKeyboard() {
@@ -1056,8 +1070,12 @@
                 }
             },
             openShareModal() {
+
+                this.closeAllModals();
+                
                 this.showShareModal = true;
-                this.toggleBodyScroll(true);
+                document.body.style.overflow = 'hidden';
+                
                 if (this.showChartScreen) {
                     setTimeout(() => {
                         const shareModal = document.getElementById('shareModal');
@@ -1066,14 +1084,13 @@
                 }
             },
             toggleShareModal() {
-                this.showShareModal = !this.showShareModal;
-                this.toggleBodyScroll(this.showShareModal);
-                // Если открыто поверх Chart
-                if (this.showShareModal && this.showChartScreen) {
-                    setTimeout(() => {
-                        const shareModal = document.getElementById('shareModal');
-                        if (shareModal) shareModal.classList.add('modal-on-chart');
-                    }, 0);
+                if (this.showShareModal) {
+
+                    this.showShareModal = false;
+                    document.body.style.overflow = 'auto';
+                } else {
+
+                    this.openShareModal();
                 }
             },
             toggleSelectedTicker(symbol) {
@@ -1163,17 +1180,23 @@
                 }
             },
             toggleCalculator() {
-                this.showCalculator = !this.showCalculator;
                 if (this.showCalculator) {
+
+                    this.showCalculator = false;
+                    document.body.style.overflow = 'auto';
+                } else {
+
+                    this.closeAllModals();
+                    
+                    this.showCalculator = true;
                     document.body.style.overflow = 'hidden';
+                    
                     if (this.showChartScreen) {
                         setTimeout(() => {
                             const calculatorModal = document.getElementById('calculatorModal');
                             if (calculatorModal) calculatorModal.classList.add('modal-on-chart');
                         }, 0);
                     }
-                } else {
-                    document.body.style.overflow = 'auto';
                 }
             },
             updateCalcSettings(settings) {
@@ -1214,17 +1237,23 @@
                 }
             },
             togglePortfolio() {
-                this.showPortfolio = !this.showPortfolio;
                 if (this.showPortfolio) {
+
+                    this.showPortfolio = false;
+                    document.body.style.overflow = 'auto';
+                } else {
+
+                    this.closeAllModals();
+                    
+                    this.showPortfolio = true;
                     document.body.style.overflow = 'hidden';
+                    
                     if (this.showChartScreen) {
                         setTimeout(() => {
                             const portfolioModal = document.getElementById('portfolioModal');
                             if (portfolioModal) portfolioModal.classList.add('modal-on-chart');
                         }, 0);
                     }
-                } else {
-                    document.body.style.overflow = 'auto';
                 }
             },
             filterPortfolioCoins() {
@@ -1427,21 +1456,25 @@
             toggleChartModal() {
                 this.showChartModal = !this.showChartModal;
                 if (this.showChartModal) {
+
                     this.$nextTick(() => {
                         this.initChartModal();
                     });
                 }
             },
             handleChartModalClick(event) {
+
                 if (event.target.id === 'chartModal') {
                     this.toggleChartModal();
                 }
             },
             initChartModal() {
+
                 const chartContainerId = 'chart_container_modal';
                 const container = document.getElementById(chartContainerId);
                 
                 if (container && window.TradingView) {
+
                     if (this.chartModalInstance) {
                         this.chartModalInstance.remove();
                         this.chartModalInstance = null;
@@ -1472,25 +1505,32 @@
             setTimeframe(timeframe) {
                 this.currentTimeframe = timeframe;
                 if (this.chartModalInstance) {
+
                     this.chartModalInstance.setInterval(timeframe);
                 }
             },
             setChartTimeframe(timeframe) {
                 this.currentTimeframe = timeframe;
                 if (this.chartModalInstance) {
+
                     this.chartModalInstance.setInterval(timeframe);
                 }
             },
+
             toggleChartScreen() {
+
                 this.showChartScreen = !this.showChartScreen;
                 if (this.showChartScreen) {
+
                     document.body.classList.add('modal-open');
+
                     this.$nextTick(() => {
                         this.initFullscreenChart();
                     });
                     
                     this.updateModalZIndexes(true);
                 } else {
+
                     document.body.classList.remove('modal-open');
                     
                     this.updateModalZIndexes(false);
@@ -1551,6 +1591,7 @@
                 const container = document.getElementById(chartContainerId);
                 
                 if (container && window.TradingView) {
+
                     new TradingView.widget({
                         container_id: chartContainerId,
                         width: '100%', 
@@ -1573,13 +1614,25 @@
                     });
                 }
             },
-            
+
             setChartTimeframe(timeframe) {
                 this.currentTimeframe = timeframe;
                 if (this.fullscreenChartInstance && this.fullscreenChartInstance.iframe && this.fullscreenChartInstance.iframe.contentWindow) {
                     this.fullscreenChartInstance.setInterval(timeframe);
                 }
-            }
+            },
+
+            closeAllModals() {
+
+                this.showShareModal = false;
+                this.showOrderBookModal = false;
+                this.showCalculator = false;
+                this.showPortfolio = false;
+                
+                // Восстанавливаем прокрутку страницы
+                document.body.style.overflow = 'auto';
+                document.body.classList.remove('no-scroll');
+            },
         },
         mounted() {
             this.sockInit();
@@ -2016,7 +2069,7 @@
         justify-content: center;
         z-index: 50;
         padding-top: 5vh; 
-        padding-bottom: 120px; 
+        padding-bottom: 120px;
     }
 
     #shareModal .bg-[--color-bg--300] {
@@ -2109,7 +2162,7 @@
         .nav-button {
             min-width: 70px;
             max-width: 70px;
-            min-height: 40px;
+            min-height: 40px; 
             margin: 2px;
             font-size: 0.75rem; 
             padding: 0.5rem 0; 
@@ -2141,12 +2194,13 @@
         align-items: flex-start; 
         justify-content: center;
         z-index: 50;
-        padding-top: 2vh;
-        padding-bottom: 140px; 
+        padding-top: 2vh; 
+        padding-bottom: 100px; 
+        max-height: calc(100vh - 100px); 
     }
 
     #portfolioModal .bg-[--color-bg--300] {
-        max-height: 85vh; 
+        max-height: calc(100vh - 150px); 
         overflow: auto; 
         width: 90%;
         max-width: 900px;
@@ -2162,7 +2216,7 @@
         border: 1px solid var(--color-primary-purple);
         border-radius: 4px;
         display: block;
-        height: 300px !important;
+        height: 150px !important; 
         overflow-y: scroll !important;
     }
     
