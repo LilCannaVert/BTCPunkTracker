@@ -66,6 +66,9 @@
               <div class="tickers w-full max-w-[500px] mx-auto"> 
                 <div class="mb-2">
                   <div class="flex items-center">
+                    <button @click="toggleChartScreen" class="bg-[--color-primary-blue] text-white px-2 py-1 rounded text-sm ml-2 font-rajdhani">
+                        Chart
+                    </button>
                     <button @click="toggleOrderBookModal" class="bg-[--color-primary-blue] text-white px-2 py-1 rounded text-sm ml-2 font-rajdhani">
                         Order Book
                     </button>
@@ -130,13 +133,61 @@
                 </div>
               </div>
 
-              <div class="chart flex-grow mt-0">
-                <div class="flex items-center justify-between">
-                  <h2 class="text-glow font-bold text-xl">Trading Chart</h2>
+              <div v-if="showChartModal" 
+                   id="chartModal" 
+                   class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+                   @click="handleChartModalClick">
+                <div class="bg-[--color-bg--300] rounded-lg p-4 w-5/6 max-w-4xl" @click.stop>
+                  <div class="flex justify-between items-center">
+                    <h2 class="text-lg font-bold text-[--color-primary-silver]">Chart for {{ currentTicker }}</h2>
+                    <button @click="toggleChartModal" class="bg-red-500 text-white px-4 py-2 rounded">Close</button>
+                  </div>
+                  
+                  <div class="mt-4 mb-4">
+                    <div class="cb relative" style="height: 500px; width: 100%;">
+                      <div :id="'chart_container_modal'" style="height: 100%; width: 100%;"></div>
+                    </div>
+                  </div>
+
+                  <div class="mt-4 flex flex-wrap gap-2">
+                    <button @click="setTimeframe('1m')" class="bg-[--color-primary-blue] text-white px-3 py-1 rounded">1m</button>
+                    <button @click="setTimeframe('5m')" class="bg-[--color-primary-blue] text-white px-3 py-1 rounded">5m</button>
+                    <button @click="setTimeframe('15m')" class="bg-[--color-primary-blue] text-white px-3 py-1 rounded">15m</button>
+                    <button @click="setTimeframe('1h')" class="bg-[--color-primary-blue] text-white px-3 py-1 rounded">1h</button>
+                    <button @click="setTimeframe('4h')" class="bg-[--color-primary-blue] text-white px-3 py-1 rounded">4h</button>
+                    <button @click="setTimeframe('1d')" class="bg-[--color-primary-blue] text-white px-3 py-1 rounded">1d</button>
+                    <button @click="setTimeframe('1w')" class="bg-[--color-primary-blue] text-white px-3 py-1 rounded">1w</button>
+                  </div>
                 </div>
-                <div class="delimiter2 my-4"></div>
-                <div class="cb relative" style="height: 650px; width: 100%;">
-                  <div :id="container_id" style="height: 100%; width: 100%;"></div>
+              </div>
+
+              <div v-if="showChartScreen" class="chart-screen-overlay">
+                <div class="chart-screen-content">
+                  <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold text-[--color-primary-silver]"> {{ currentTicker }}</h2>
+                  </div>
+                  
+                  <div class="flex flex-wrap gap-2 mb-4">
+                    <button @click="toggleOrderBookModal" class="bg-[--color-primary-blue] text-white px-2 py-1 rounded text-sm font-rajdhani">
+                      Order Book
+                    </button>
+                    <button @click="openShareModal" class="bg-[--color-primary-blue] text-white px-2 py-1 rounded text-sm font-rajdhani">
+                      Share
+                    </button>
+                    <button @click="toggleCalculator" class="bg-[--color-primary-blue] text-white px-2 py-1 rounded text-sm font-rajdhani">
+                      Calculator
+                    </button>
+                    <button @click="togglePortfolio" class="bg-[--color-primary-blue] text-white px-2 py-1 rounded text-sm font-rajdhani">
+                      Portfolio
+                    </button>
+                    <button @click="toggleChartScreen" class="bg-[--color-primary-blue] text-white px-2 py-1 rounded text-sm font-rajdhani">
+                      Tickers
+                    </button>
+                  </div>
+                  
+                  <div class="cb relative flex-grow" style="width: 100%;">
+                    <div id="chart_container_fullscreen" style="height: 100%; width: 100%;"></div>
+                  </div>
                 </div>
               </div>
 
@@ -230,6 +281,7 @@
           </section>
 
           <div v-if="showSettings" id="staticModal" class="bg-[#00000080] fixed flex items-center justify-center top-0 left-0 right-0 z-50 w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+
             <div class="relative w-full max-w-2xl max-h-full">
               <div class="relative">
                 <div class="flex">
@@ -342,7 +394,8 @@
             </div>
           </div>
 
-          <div v-if="showCalculator" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <!-- Calculator Modal -->
+          <div v-if="showCalculator" id="calculatorModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
             <div class="bg-[--color-bg--300] rounded-lg p-3 w-full max-w-sm mx-4" @click.stop>
                 <div class="flex justify-between items-center mb-2 sticky top-0 bg-[--color-bg--300] z-10">
                     <h2 class="text-base font-bold text-[--color-primary-silver]">Calculator</h2>
@@ -359,17 +412,18 @@
             </div>
           </div>
 
-          <div v-if="showPortfolio" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <!-- Portfolio Modal -->
+          <div v-if="showPortfolio" id="portfolioModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
             <div class="bg-[--color-bg--300] rounded-lg p-4 w-full max-w-2xl mx-4" @click.stop>
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-lg font-bold text-[--color-primary-silver]">Portfolio</h2>
                     <button @click="togglePortfolio" class="bg-red-500 text-white px-4 py-2 rounded">Close</button>
                 </div>
 
- 
+                <!-- Add Position Form -->
                 <div class="mb-6 bg-[--color-bg--500] p-4 rounded-lg">
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                 
+                        <!-- Coin Selection -->
                         <div class="form-group relative">
                             <input
                                 v-model="portfolioForm.searchQuery"
@@ -379,6 +433,7 @@
                                 class="form-control bg-[--color-bg--300] text-white p-2 rounded w-full text-sm"
                                 placeholder="Search coin..." />
                             
+                            <!-- Dropdown for filtered results -->
                             <div v-if="showPortfolioDropdown && filteredPortfolioCoins.length > 0" 
                                  class="absolute z-50 w-full mt-1 bg-[--color-bg--300] rounded-lg shadow-lg max-h-48 overflow-y-auto">
                                 <div v-for="ticker in filteredPortfolioCoins" 
@@ -390,6 +445,7 @@
                             </div>
                         </div>
 
+                        <!-- Amount -->
                         <div class="form-group">
                             <input 
                                 v-model="portfolioForm.amount"
@@ -400,6 +456,7 @@
                                 placeholder="Amount of coins" />
                         </div>
 
+                        <!-- Buy Price -->
                         <div class="form-group">
                             <input 
                                 v-model="portfolioForm.buyPrice"
@@ -484,6 +541,7 @@
 <script>
     const { createApp } = Vue
     
+    // Calculator component
     const CalculatorComponent = {
         props: ['settings', 'coins', 'tickers'],
         template: `
@@ -628,9 +686,9 @@
                         return (symbol.includes(query) || pair.includes(query)) && 
                                ticker.symbol.endsWith('USDT');
                     })
-                    .slice(0, 5) // Limit to top 5 results
+                    .slice(0, 5) 
                     .sort((a, b) => {
-                        // Exact matches first
+
                         const aExact = a.symbol.toLowerCase().startsWith(query);
                         const bExact = b.symbol.toLowerCase().startsWith(query);
                         if (aExact && !bExact) return -1;
@@ -791,7 +849,13 @@
                 currentValue: 0,
                 totalProfit: 0,
                 totalProfitPercent: 0,
-                lastUpdate: Date.now()
+                lastUpdate: Date.now(),
+                
+                showChartModal: false,
+                currentTimeframe: '30',
+                chartModalInstance: null,
+                showChartScreen: false,
+                fullscreenChartInstance: null,
             }
         },
         methods: {
@@ -869,7 +933,6 @@
                     });
 
                     if (Object.keys(this.tickers).length > 100 && this.portfolioPositions.length === 0) {
-
                         this.loadState();
                     }
 
@@ -894,6 +957,19 @@
                 this.options.symbol = 'BINANCE:' + symbol;
                 if (window.tvWidget) {
                     window.tvWidget.setSymbol('BINANCE:' + symbol);
+                }
+                
+                if (this.showChartScreen && this.fullscreenChartInstance) {
+                    try {
+                        this.fullscreenChartInstance.setSymbol('BINANCE:' + symbol, () => {
+                            console.log('Chart symbol updated to', symbol);
+                        });
+                    } catch (e) {
+                        console.error('Error updating chart symbol:', e);
+                        this.$nextTick(() => {
+                            this.initFullscreenChart();
+                        });
+                    }
                 }
             },
             setFavorite(symbol) {
@@ -972,6 +1048,12 @@
                 this.showOrderBookModal = !this.showOrderBookModal;
                 if (this.showOrderBookModal) {
                     document.body.classList.add('no-scroll'); 
+                    if (this.showChartScreen) {
+                        setTimeout(() => {
+                            const orderBookModal = document.getElementById('orderBookModal');
+                            if (orderBookModal) orderBookModal.classList.add('modal-on-chart');
+                        }, 0);
+                    }
                 } else {
                     document.body.classList.remove('no-scroll'); 
                 }
@@ -1000,10 +1082,22 @@
             openShareModal() {
                 this.showShareModal = true;
                 this.toggleBodyScroll(true);
+                if (this.showChartScreen) {
+                    setTimeout(() => {
+                        const shareModal = document.getElementById('shareModal');
+                        if (shareModal) shareModal.classList.add('modal-on-chart');
+                    }, 0);
+                }
             },
             toggleShareModal() {
                 this.showShareModal = !this.showShareModal;
                 this.toggleBodyScroll(this.showShareModal);
+                if (this.showShareModal && this.showChartScreen) {
+                    setTimeout(() => {
+                        const shareModal = document.getElementById('shareModal');
+                        if (shareModal) shareModal.classList.add('modal-on-chart');
+                    }, 0);
+                }
             },
             toggleSelectedTicker(symbol) {
                 const index = this.selectedTickers.indexOf(symbol);
@@ -1095,6 +1189,12 @@
                 this.showCalculator = !this.showCalculator;
                 if (this.showCalculator) {
                     document.body.style.overflow = 'hidden';
+                    if (this.showChartScreen) {
+                        setTimeout(() => {
+                            const calculatorModal = document.getElementById('calculatorModal');
+                            if (calculatorModal) calculatorModal.classList.add('modal-on-chart');
+                        }, 0);
+                    }
                 } else {
                     document.body.style.overflow = 'auto';
                 }
@@ -1140,6 +1240,12 @@
                 this.showPortfolio = !this.showPortfolio;
                 if (this.showPortfolio) {
                     document.body.style.overflow = 'hidden';
+                    if (this.showChartScreen) {
+                        setTimeout(() => {
+                            const portfolioModal = document.getElementById('portfolioModal');
+                            if (portfolioModal) portfolioModal.classList.add('modal-on-chart');
+                        }, 0);
+                    }
                 } else {
                     document.body.style.overflow = 'auto';
                 }
@@ -1194,7 +1300,6 @@
                 this.portfolioForm.amount = '';
                 this.portfolioForm.buyPrice = '';
 
-
                 this.updatePortfolioTotals();
             },
             removePosition(index) {
@@ -1231,7 +1336,7 @@
                             profitPercent: 0
                         }));
                         console.log('Portfolio state loaded:', this.portfolioPositions); 
-
+                        
                         if (this.portfolioPositions.length > 0 && Object.keys(this.tickers).length > 0) {
                             this.updatePortfolioTotals();
                         }
@@ -1313,6 +1418,167 @@
                 }
 
                 this.status = 2;
+            },
+            
+            toggleChartModal() {
+                this.showChartModal = !this.showChartModal;
+                if (this.showChartModal) {
+
+                    this.$nextTick(() => {
+                        this.initChartModal();
+                    });
+                }
+            },
+            handleChartModalClick(event) {
+                if (event.target.id === 'chartModal') {
+                    this.toggleChartModal();
+                }
+            },
+            initChartModal() {
+
+                const chartContainerId = 'chart_container_modal';
+                const container = document.getElementById(chartContainerId);
+                
+                if (container && window.TradingView) {
+                    if (this.chartModalInstance) {
+                        this.chartModalInstance.remove();
+                        this.chartModalInstance = null;
+                    }
+                    
+                    this.chartModalInstance = new window.TradingView.widget({
+                        container_id: chartContainerId,
+                        autosize: true,
+                        symbol: 'BINANCE:' + this.ticker,
+                        interval: this.currentTimeframe,
+                        timezone: 'Etc/UTC',
+                        theme: 'dark',
+                        style: '1',
+                        locale: 'en',
+                        toolbar_bg: '#f1f3f6',
+                        enable_publishing: false,
+                        allow_symbol_change: true,
+                        save_image: false,
+                        studies: ['RSI@tv-basicstudies'],
+                        show_popup_button: true,
+                        popup_width: '1000',
+                        popup_height: '650'
+                    });
+                } else {
+                    console.error('TradingView widget not available or container not found');
+                }
+            },
+            setTimeframe(timeframe) {
+                this.currentTimeframe = timeframe;
+                if (this.chartModalInstance) {
+                    this.chartModalInstance.setInterval(timeframe);
+                }
+            },
+            setChartTimeframe(timeframe) {
+                this.currentTimeframe = timeframe;
+                if (this.chartModalInstance) {
+                    this.chartModalInstance.setInterval(timeframe);
+                }
+            },
+            toggleChartScreen() {
+                this.showChartScreen = !this.showChartScreen;
+                if (this.showChartScreen) {
+
+                    document.body.classList.add('modal-open');
+
+                    this.$nextTick(() => {
+                        this.initFullscreenChart();
+                    });
+                    
+                    this.updateModalZIndexes(true);
+                } else {
+  
+                    document.body.classList.remove('modal-open');
+                    
+                    this.updateModalZIndexes(false);
+                }
+            },
+            
+            updateModalZIndexes(isChartOpen) {
+                setTimeout(() => {
+                    if (this.showOrderBookModal) {
+                        const orderBookModal = document.getElementById('orderBookModal');
+                        if (orderBookModal) {
+                            if (isChartOpen) {
+                                orderBookModal.classList.add('modal-on-chart');
+                            } else {
+                                orderBookModal.classList.remove('modal-on-chart');
+                            }
+                        }
+                    }
+                    
+                    if (this.showShareModal) {
+                        const shareModal = document.getElementById('shareModal');
+                        if (shareModal) {
+                            if (isChartOpen) {
+                                shareModal.classList.add('modal-on-chart');
+                            } else {
+                                shareModal.classList.remove('modal-on-chart');
+                            }
+                        }
+                    }
+                    
+                    if (this.showCalculator) {
+                        const calculatorModal = document.getElementById('calculatorModal');
+                        if (calculatorModal) {
+                            if (isChartOpen) {
+                                calculatorModal.classList.add('modal-on-chart');
+                            } else {
+                                calculatorModal.classList.remove('modal-on-chart');
+                            }
+                        }
+                    }
+                    
+                    if (this.showPortfolio) {
+                        const portfolioModal = document.getElementById('portfolioModal');
+                        if (portfolioModal) {
+                            if (isChartOpen) {
+                                portfolioModal.classList.add('modal-on-chart');
+                            } else {
+                                portfolioModal.classList.remove('modal-on-chart');
+                            }
+                        }
+                    }
+                }, 0);
+            },
+            
+            initFullscreenChart() {
+                const chartContainerId = 'chart_container_fullscreen';
+                const container = document.getElementById(chartContainerId);
+                
+                if (container && window.TradingView) {
+                    new TradingView.widget({
+                        container_id: chartContainerId,
+                        width: '100%', 
+                        height: '100%', 
+                        symbol: this.options.symbol,
+                        interval: this.options.interval,
+                        timezone: this.options.timezone,
+                        theme: this.options.theme,
+                        style: this.options.style,
+                        locale: this.options.locale,
+                        toolbar_bg: this.options.toolbar_bg,
+                        enable_publishing: this.options.enable_publishing,
+                        withdateranges: true,
+                        hide_side_toolbar: this.options.hide_side_toolbar,
+                        allow_symbol_change: true,
+                        save_image: true,
+                        details: this.options.details,
+                        hotlist: this.options.hotlist,
+                        studies: this.options.studies
+                    });
+                }
+            },
+            
+            setChartTimeframe(timeframe) {
+                this.currentTimeframe = timeframe;
+                if (this.fullscreenChartInstance && this.fullscreenChartInstance.iframe && this.fullscreenChartInstance.iframe.contentWindow) {
+                    this.fullscreenChartInstance.setInterval(timeframe);
+                }
             }
         },
         mounted() {
@@ -1654,6 +1920,56 @@
     .no-scroll {
         overflow: hidden; 
         height: 100%; 
+    }
+
+    .chart-screen-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: var(--color-primary-black);
+        z-index: 100;
+        overflow: hidden;
+    }
+    
+    .chart-screen-content {
+        height: 100%;
+        width: 100%;
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .chart-screen-content .cb {
+        background-color: var(--color-bg--300);
+        border: 2px solid var(--color-primary-purple);
+        box-shadow: 0 0 10px 4px rgba(128, 0, 128, 0.9);
+        height: calc(100vh - 120px);
+    }
+    
+    body.modal-open {
+        overflow: hidden;
+        pointer-events: none;
+    }
+    
+    body.modal-open .chart-screen-overlay {
+        pointer-events: auto;
+    }
+    
+    .modal-on-chart {
+        z-index: 200 !important;
+    }
+    
+    /* Стили для модальных окон на Chart */
+    body.modal-open .modal-on-chart {
+        pointer-events: auto;
+    }
+    
+    /* Создаем небольшую тень для модальных окон на Chart */
+    .chart-screen-overlay + .modal-on-chart > div {
+        box-shadow: 0 0 25px rgba(0, 0, 0, 0.8);
+        border: 2px solid var(--color-primary-purple);
     }
 
     .font-rajdhani {
