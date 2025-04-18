@@ -1741,28 +1741,15 @@
     @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@100;200;300;400;700&display=swap');
 
     :root {
-        --ui-notch-amount: 0.5rem;
-        --ui-notch-hypotenuse: 0.7071067811865476rem;
-        --ui-notch-path: polygon(
-            var(--ui-notch-amount) 0,
-            calc(100% - var(--ui-notch-amount)) 0,
-            100% var(--ui-notch-amount),
-            100% calc(100% - var(--ui-notch-amount)),
-            calc(100% - var(--ui-notch-amount)) 100%,
-            var(--ui-notch-amount) 100%,
-            0 calc(100% - var(--ui-notch-amount)),
-            0 var(--ui-notch-amount)
-        );
-        --ui-notch-path-r: polygon(
-            0 var(--ui-notch-amount),
-            var(--ui-notch-amount) 0,
-            calc(100% - var(--ui-notch-amount)) 0,
-            100% var(--ui-notch-amount),
-            100% calc(100% - var(--ui-notch-amount)),
-            calc(100% - var(--ui-notch-amount)) 100%,
-            var(--ui-notch-amount) 100%,
-            0 calc(100% - var(--ui-notch-amount))
-        );
+        --color-primary-black: #13151a;
+        --color-bg--300: rgb(22, 28, 36);
+        --color-bg--500: rgb(27, 38, 59);
+        --color-primary--500: rgb(239, 68, 68);
+        --color-primary-green: #10b981;
+        --color-primary-silver: #a1a1aa;
+        --color-primary-blue: #3c82f6;
+        --color-primary-purple: #800080;
+        --color-primary-yellow: #eab308;
         --ui-glow-text: 0 0 0.125em currentColor;
     }
 
@@ -1826,52 +1813,17 @@
     .cb, .cb2 {
         position: relative;
         background-color: var(--color-bg--300);
-        -webkit-clip-path: var(--ui-notch-path);
-        clip-path: var(--ui-notch-path);
         padding-right: 0.5rem;
         border: 2px solid var(--color-primary-purple); 
         box-shadow: 0 0 10px 4px rgba(128, 0, 128, 0.9); 
     }
 
-    .cb:hover, .cb2:hover {
-       
-    }
-
-    .cb::before {
-        background-color: var(--color-primary--600);
-        bottom: 5px;
-        content: "";
-        display: block;
-        height: 3px;
-        position: absolute;
-        right: -6px;
-        top: auto;
-        transform: rotate(-45deg);
-        width: var(--ui-notch-hypotenuse);
-        z-index: 100;
+    .cb::before, .cb2::before {
+        display: none;
     }
 
     .cb-reverse {
-        clip-path: var(--ui-notch-path-r);
-    }
 
-    .cb-reverse::before {
-        transform: rotate(45deg);
-        left: -6px;
-    }
-
-    .cb2::before {
-        background-color: var(--color-primary--600);
-        bottom: 5px;
-        content: "";
-        display: block;
-        height: 3px;
-        position: absolute;
-        right: -6px;
-        top: auto;
-        transform: rotate(-45deg);
-        width: var(--ui-notch-hypotenuse);
-        z-index: 100;
     }
 
     .cb_tab {
@@ -1890,20 +1842,6 @@
         cursor: pointer;
         border: 0;
         outline: none;
-        clip-path: polygon(
-            4rem 0, 
-            4.5rem 0.25rem, 
-            100% 0.25rem, 
-            100% calc(100% - var(--ui-notch-amount) + 2px),
-            calc(100% - var(--ui-notch-amount) + 2px) 100%, 
-            0 100%, 
-            0 0
-        );
-    }
-
-    .cb_tab:hover,
-    .cb_tab.active {
-        color: var(--color-primary-blue);
     }
 
     .cb_tab div {
@@ -1917,17 +1855,13 @@
         align-items: center;
         justify-content: center;
         background-color: var(--color-bg--300);
-        clip-path: polygon(
-            4rem 0, 
-            4.5rem 0.25rem, 
-            100% 0.25rem, 
-            100% calc(100% - var(--ui-notch-amount) + 2px),
-            calc(100% - var(--ui-notch-amount) + 2px) 100%, 
-            0 100%, 
-            0 0
-        );
     }
-    
+
+    .cb_tab:hover,
+    .cb_tab.active {
+        color: var(--color-primary-blue);
+    }
+
     .cb {
         height: 100%; 
         width: 100%;  
@@ -2126,9 +2060,8 @@
         letter-spacing: 0.05em;
         text-transform: uppercase;
         font-weight: 600;
-        border: 1px solid var(--color-primary-blue);
-        box-shadow: 0 0 5px var(--color-primary-blue);
-        clip-path: var(--ui-notch-path);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 0 10px rgba(128, 0, 128, 0.6);
         min-width: 90px;
         max-width: 90px;
         min-height: 60px;
@@ -2137,18 +2070,49 @@
         margin: 0 3px;
         text-align: center;
         line-height: 1.2;
+        border-radius: 0.5rem;
+        color: white;
+        background: radial-gradient(circle at 30% 30%, rgba(128, 0, 128, 0.6), transparent),
+                    radial-gradient(circle at 70% 70%, rgba(128, 0, 128, 0.4), transparent),
+                    radial-gradient(circle at 50% 50%, rgba(200, 0, 200, 0.6), transparent);
+        background-size: 200% 200%;
+        animation: lavaLamp 6s infinite ease-in-out;
+    }
+    
+    @keyframes lavaLamp {
+        0% { background-position: 0% 100%; }
+        50% { background-position: 100% 0%; }
+        100% { background-position: 0% 100%; }
     }
     
     .nav-button:hover {
-        background-color: var(--color-primary-purple);
-        box-shadow: 0 0 15px var(--color-primary-blue);
         transform: translateY(-3px);
-        border-color: var(--color-primary-purple);
+        background-color: rgba(128, 0, 128, 0.8);
+        box-shadow: 0 0 15px rgba(128, 0, 128, 0.8);
     }
     
     .nav-button:active {
         transform: translateY(1px);
-        box-shadow: 0 0 8px var(--color-primary-purple);
+        box-shadow: 0 0 8px rgba(128, 0, 128, 0.8);
+    }
+    
+    .bubble {
+        position: absolute;
+        bottom: 0;
+        background-color: rgba(200, 0, 200, 0.6);
+        border-radius: 50%;
+        opacity: 1;
+    }
+    
+    @keyframes bubble {
+        0% {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        100% {
+            transform: translateY(-100px);
+            opacity: 0;
+        }
     }
     
     @media (max-width: 640px) {
@@ -2252,4 +2216,55 @@
     }
 </style>
 </body>
+<script>
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const navButtons = document.querySelectorAll('.nav-button');
+        const bubbleIntervals = {};
+        
+        function createBubble(button) {
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble';
+            bubble.style.left = `${Math.random() * 100}%`;
+            bubble.style.width = `${Math.random() * 3 + 4}px`;
+            bubble.style.height = bubble.style.width;
+            bubble.style.animationDuration = `${Math.random() * 2 + 2}s`;
+            button.appendChild(bubble);
+            bubble.style.animation = `bubble ${bubble.style.animationDuration} linear forwards`;
+            bubble.addEventListener('animationend', () => {
+                bubble.remove();
+            });
+        }
+        
+        function startBubbleGeneration(button) {
+            const buttonId = button.textContent.trim();
+            if (!bubbleIntervals[buttonId]) {
+                bubbleIntervals[buttonId] = setInterval(() => createBubble(button), 200);
+            }
+        }
+        
+        function stopBubbleGeneration(button) {
+            const buttonId = button.textContent.trim();
+            if (bubbleIntervals[buttonId]) {
+                clearInterval(bubbleIntervals[buttonId]);
+                bubbleIntervals[buttonId] = null;
+                
+                const bubbles = button.querySelectorAll('.bubble');
+                bubbles.forEach(bubble => bubble.remove());
+            }
+        }
+        
+        navButtons.forEach(button => {
+            startBubbleGeneration(button);
+            
+            button.addEventListener('mouseenter', () => {
+                stopBubbleGeneration(button);
+            });
+            
+            button.addEventListener('mouseleave', () => {
+                startBubbleGeneration(button);
+            });
+        });
+    });
+</script>
 </html>
