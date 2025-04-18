@@ -731,7 +731,6 @@
             }
         },
         mounted() {
-
             document.addEventListener('click', (e) => {
                 if (!e.target.closest('.form-group')) {
                     this.showDropdown = false;
@@ -902,7 +901,7 @@
                                 volume: parseFloat(ticker.v).toFixed(8),
                                 quoteVolume: parseFloat(ticker.q).toFixed(8),
                                 tokenVolume: parseFloat(ticker.v).toFixed(2),
-                                assetVolume: parseFloat(ticker.q).toFixed(2),
+                                assetVolume: parseFloat(ticker.q).toFixed(0), 
                                 percent: parseFloat(ticker.P),
                                 arrow: parseFloat(ticker.P) >= 0 ? '↑' : '↓',
                                 style: parseFloat(ticker.P) >= 0 ? 'text-[--color-primary-green]' : 'text-[--color-primary--500]'
@@ -1226,6 +1225,7 @@
                 this.currentTicker = ticker.symbol;
                 this.ticker = ticker.symbol;
                 this.showOrderBookDropdown = false;
+
                 this.prepareOrderBook();
                 if (window.tvWidget) {
                     window.tvWidget.setSymbol('BINANCE:' + this.currentTicker);
@@ -1315,6 +1315,7 @@
             },
             saveState() {
                 try {
+
                     if (!Array.isArray(this.portfolioPositions)) {
                         console.error('portfolioPositions is not an array:', this.portfolioPositions);
                         return;
@@ -1614,7 +1615,7 @@
                     });
                 }
             },
-
+            
             setChartTimeframe(timeframe) {
                 this.currentTimeframe = timeframe;
                 if (this.fullscreenChartInstance && this.fullscreenChartInstance.iframe && this.fullscreenChartInstance.iframe.contentWindow) {
@@ -1629,7 +1630,6 @@
                 this.showCalculator = false;
                 this.showPortfolio = false;
                 
-                // Восстанавливаем прокрутку страницы
                 document.body.style.overflow = 'auto';
                 document.body.classList.remove('no-scroll');
             },
@@ -1658,13 +1658,11 @@
 
             window.addEventListener('click', this.handleClick);
 
-            // Load saved calculator settings
             const savedSettings = localStorage.getItem('calcSettings');
             if (savedSettings) {
                 this.calcSettings = JSON.parse(savedSettings);
             }
             
-            // Get coins data
             axios.get('https://api.coinranking.com/v1/public/coins?base=USD&timePeriod=24h').then(response => {
                 this.coins = response.data.data.coins;
             });
@@ -1993,7 +1991,7 @@
         height: 100%;
         width: 100%;
         padding: 1rem;
-        padding-bottom: 100px; 
+        padding-bottom: 100px;
         display: flex;
         flex-direction: column;
     }
@@ -2002,7 +2000,7 @@
         background-color: var(--color-bg--300);
         border: 2px solid var(--color-primary-purple);
         box-shadow: 0 0 10px 4px rgba(128, 0, 128, 0.9);
-        height: calc(100vh - 250px); 
+        height: calc(100vh - 250px);
     }
     
     body.modal-open {
@@ -2053,7 +2051,7 @@
     }
 
     #shareModal .grid {
-        max-height: 40vh; 
+        max-height: 40vh;
         overflow-y: auto;
         overflow-x: hidden;
         scrollbar-width: thin;
@@ -2065,15 +2063,15 @@
         position: fixed;
         inset: 0;
         display: flex;
-        align-items: flex-start; 
+        align-items: flex-start;
         justify-content: center;
         z-index: 50;
-        padding-top: 5vh; 
+        padding-top: 5vh;
         padding-bottom: 120px;
     }
 
     #shareModal .bg-[--color-bg--300] {
-        max-height: 70vh; 
+        max-height: 70vh;
         overflow: hidden;
         width: 90%;
         max-width: 900px;
@@ -2118,7 +2116,7 @@
     .fixed.bottom-0 {
         background-color: var(--color-bg--300);
         box-shadow: 0 -4px 15px rgba(122, 11, 122, 0.5);
-        padding: 18px 0; 
+        padding: 18px 0;
     }
     
     .nav-button {
@@ -2127,15 +2125,15 @@
         overflow: hidden;
         letter-spacing: 0.05em;
         text-transform: uppercase;
-        font-weight: 600; 
+        font-weight: 600;
         border: 1px solid var(--color-primary-blue);
         box-shadow: 0 0 5px var(--color-primary-blue);
         clip-path: var(--ui-notch-path);
         min-width: 90px;
         max-width: 90px;
-        min-height: 60px; 
-        padding: 1.25rem 0; 
-        font-size: 1rem; 
+        min-height: 60px;
+        padding: 1.25rem 0;
+        font-size: 1rem;
         margin: 0 3px;
         text-align: center;
         line-height: 1.2;
@@ -2162,10 +2160,10 @@
         .nav-button {
             min-width: 70px;
             max-width: 70px;
-            min-height: 40px; 
+            min-height: 40px;
             margin: 2px;
-            font-size: 0.75rem; 
-            padding: 0.5rem 0; 
+            font-size: 0.75rem;
+            padding: 0.5rem 0;
         }
     }
     
@@ -2173,9 +2171,9 @@
         .nav-button {
             min-width: 60px;
             max-width: 60px;
-            min-height: 36px; 
-            font-size: 0.7rem; 
-            padding: 0.45rem 0; 
+            min-height: 36px;
+            font-size: 0.7rem;
+            padding: 0.45rem 0;
         }
     }
 
@@ -2191,23 +2189,23 @@
         position: fixed;
         inset: 0;
         display: flex;
-        align-items: flex-start; 
+        align-items: flex-start;
         justify-content: center;
         z-index: 50;
-        padding-top: 2vh; 
-        padding-bottom: 100px; 
-        max-height: calc(100vh - 100px); 
+        padding-top: 2vh;
+        padding-bottom: 100px;
+        max-height: calc(100vh - 100px);
     }
 
     #portfolioModal .bg-[--color-bg--300] {
-        max-height: calc(100vh - 150px); 
-        overflow: auto; 
+        max-height: calc(100vh - 150px);
+        overflow: auto;
         width: 90%;
         max-width: 900px;
     }
     
     #portfolioModal .mt-6 {
-        margin-bottom: 15px; 
+        margin-bottom: 15px;
     }
     
     .portfolio-positions-container {
@@ -2216,7 +2214,7 @@
         border: 1px solid var(--color-primary-purple);
         border-radius: 4px;
         display: block;
-        height: 150px !important; 
+        height: 150px !important;
         overflow-y: scroll !important;
     }
     
