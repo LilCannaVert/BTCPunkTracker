@@ -84,6 +84,32 @@
             </button>
             </div>
             
+            <!-- Кнопка Contact и выпадающее меню -->
+            <div class="flex items-center absolute top-0 left-1/2 transform -translate-x-1/2 z-50">
+                <button 
+                    @click="toggleContactDropdown" 
+                    class="nav-button header-button"
+                >
+                    Contact
+                </button>
+                <div v-if="showContactDropdown" 
+                     class="absolute top-full mt-2 w-40 bg-[--color-bg--300] rounded-lg shadow-lg overflow-hidden z-50"
+                     @click.stop>
+                    <button 
+                        @click="openInTelegramWebApp('http://t.me/LilBitcoinVert'); toggleContactDropdown()" 
+                        class="block w-full text-left px-4 py-2 text-sm text-[--color-primary-silver] hover:bg-[--color-primary-purple]"
+                    >
+                        Contact me
+                    </button>
+                    <button 
+                        @click="openInTelegramWebApp('https://t.me/BitcoinVertical'); toggleContactDropdown()" 
+                        class="block w-full text-left px-4 py-2 text-sm text-[--color-primary-silver] hover:bg-[--color-primary-purple]"
+                    >
+                        Follow
+                    </button>
+                </div>
+            </div>
+
             <div class="absolute top-0 right-0 z-50">
                 <button 
                 @click="toggleNewsScreen" 
@@ -1251,6 +1277,8 @@
                 showCalculator: false,
                 showPortfolio: false,
                 showNewsScreen: false,
+                // Добавляем переменную для выпадающего меню Contact
+                showContactDropdown: false,
                 newsItems: [],
                 newsLoading: false,
                 newsPage: 1,
@@ -1645,7 +1673,7 @@
             },
             formatTickerPrice(ticker) {
                 const specialPriceTokens = ['PEPE', 'BONK', 'SHIB', '1000SATS', 'BTTC'];
-                const twoDecimalTokens = ['BTC', 'ETH', 'SOL', 'TRUMP', 'AVAX', 'PAXG', 'BCH', 'WBTC', 'ETC', 'ENS', 'INJ', 'MKR', 'LINK', 'COMP', 'QNT', 'BNB', 'YFI', 'KSM', 'TAO', 'WBETH', 'DASH', 'GMX', 'GNO', 'BIFI', 'EGLD', 'TRB', 'METIS', 'AUCTION', 'BANANA', 'ZEC', 'DEXE', 'ILV', 'BNSOL', 'ALCX', 'DCR', 'ORDI', 'FARM', 'AAVE', 'LTC'];
+                const twoDecimalTokens = ['BTC', 'ETH', 'ORDI','SOL', 'TRUMP', 'AVAX', 'PAXG', 'BCH', 'WBTC', 'ETC', 'ENS', 'INJ', 'MKR', 'LINK', 'COMP', 'QNT', 'BNB', 'YFI', 'KSM', 'TAO', 'WBETH', 'DASH', 'GMX', 'GNO', 'BIFI', 'EGLD', 'TRB', 'METIS', 'AUCTION', 'BANANA', 'ZEC', 'DEXE', 'ILV', 'BNSOL', 'ALCX', 'DCR', 'FARM', 'AAVE', 'LTC'];
             
                 let price;
                 
@@ -2162,7 +2190,7 @@
             },
             formatDisplayPrice(ticker) {
                 const specialPriceTokens = ['PEPE', 'BONK', 'SHIB', '1000SATS', 'BTTC'];
-                const twoDecimalTokens = ['BTC', 'ETH', 'SOL', 'TRUMP', 'AVAX', 'PAXG', 'BCH', 'WBTC', 'ETC', 'ENS', 'INJ', 'MKR', 'LINK', 'COMP', 'QNT', 'BNB', 'YFI', 'KSM', 'TAO', 'WBETH', 'DASH', 'GMX', 'GNO', 'BIFI', 'EGLD', 'TRB', 'METIS', 'AUCTION', 'BANANA', 'ZEC', 'DEXE', 'ILV', 'BNSOL', 'ALCX', 'DCR', 'ORDI', 'FARM', 'AAVE', 'LTC'];
+                const twoDecimalTokens = ['BTC', 'ETH', 'ORDI', 'SOL', 'TRUMP', 'AVAX', 'PAXG', 'BCH', 'WBTC', 'ETC', 'ENS', 'INJ', 'MKR', 'LINK', 'COMP', 'QNT', 'BNB', 'YFI', 'KSM', 'TAO', 'WBETH', 'DASH', 'GMX', 'GNO', 'BIFI', 'EGLD', 'TRB', 'METIS', 'AUCTION', 'BANANA', 'ZEC', 'DEXE', 'ILV', 'BNSOL', 'ALCX', 'DCR', 'FARM', 'AAVE', 'LTC'];
             
                 let price;
                 
@@ -2707,11 +2735,30 @@
                 return intervalMap[timeframe] || '60'; 
             },
             openInTelegramWebApp(url) {
+                console.log('Attempting to open URL in Telegram WebApp:', url);
+                
                 if (window.Telegram?.WebApp) {
-                    window.Telegram.WebApp.openLink(url);
+                    console.log('Telegram WebApp object is available.');
+                    
+                    // Проверяем, является ли ссылка на профиль/канал Telegram (t.me)
+                    if (url.startsWith('https://t.me/') || url.startsWith('tg://')) {
+                         console.log('URL is a Telegram link, using openTelegramLink.');
+                         window.Telegram.WebApp.openTelegramLink(url);
+                    } else {
+                        // Для обычных HTTP/HTTPS ссылок (новости), используем openLink
+                        // Явно указываем force_external: false для открытия во встроенном браузере
+                        console.log('URL is a regular web link, using openLink with force_external: false.');
+                        window.Telegram.WebApp.openLink(url, { force_external: false });
+                    }
+                    
                 } else {
+                    console.log('Telegram WebApp object not available, opening in new tab.');
                     window.open(url, '_blank');
                 }
+            },
+            // Метод для переключения видимости выпадающего меню Contact
+            toggleContactDropdown() {
+                this.showContactDropdown = !this.showContactDropdown;
             },
         },
         mounted() {
