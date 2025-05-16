@@ -8,6 +8,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@100;200;300;400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script>
+        window.Telegram.WebApp.ready();
+    </script>
     
     <style id="loadingScreenStyles">
     #loadingScreen {
@@ -161,8 +165,8 @@
                 <div class="header flex items-center h-8 px-2 cursor-pointer">
                     <div @click="sortBy('token', 'desc')" :class="[sort === 'token' ? 'font-bold' : '']" class="w-1/4">Pair</div>
                     <div @click="sortBy('close', 'desc')" :class="[sort === 'close' ? 'font-bold' : '']" class="w-1/4 text-center">Price</div>
-                    <div @click="sortBy('percent', 'desc')" :class="[sort === 'percent' ? 'font-bold' : '']" class="w-1/4 text-end pr-2">Change%</div>
-                    <div @click="sortBy('assetVolume', 'desc')" :class="[sort === 'assetVolume' ? 'font-bold' : 'font-normal']" class="w-1/4 text-end pl-2 pr-8">Volume</div>
+                    <div @click="sortBy('percent', 'desc')" :class="[sort === 'percent' ? 'font-bold' : '']" class="w-1/5 text-end pr-2">Change%</div>
+                    <div @click="sortBy('assetVolume', 'desc')" :class="[sort === 'assetVolume' ? 'font-bold' : 'font-normal']" class="w-[30%] text-end pl-2">Volume</div>
                 </div>
 
                 <div class="body h-[490px] relative overflow-y-scroll px-2">
@@ -176,9 +180,9 @@
                     <div v-for="ticker in filterTickers" :key="ticker.symbol" class="flex hover:bg-[#eab30840] cursor-pointer" style="font-family: 'Roboto Mono', monospace;">
                         <div @click="changeTicker(ticker.symbol)" class="w-1/4 dotdotdot silver">{{ticker.pair}}</div>
                         <div @click="changeTicker(ticker.symbol)" :class="ticker.style" class="w-1/4 dotdotdot text-end">{{formatDisplayPrice(ticker)}}</div>
-                        <div @click="changeTicker(ticker.symbol)" :class="ticker.style" class="w-1/4 dotdotdot text-center">{{ticker.arrow}} {{ticker.percent.toFixed(2)}}</div>
-                        <div class="w-1/4 dotdotdot silver text-end flex gap-2 justify-end">
-                        <span @click="changeTicker(ticker.symbol)" class="text-sm">{{ticker.assetVolume}}</span>
+                        <div @click="changeTicker(ticker.symbol)" :class="ticker.style" class="w-1/5 dotdotdot text-center">{{ticker.arrow}} {{Math.abs(ticker.percent).toFixed(2)}}</div>
+                        <div class="w-[30%] dotdotdot silver text-end flex gap-2 justify-end">
+                        <span @click="changeTicker(ticker.symbol)" class="text-sm whitespace-nowrap">{{ticker.assetVolume}}</span>
                         <span @click="setFavorite(ticker.symbol)">
                             <svg :class="favorites.includes(ticker.symbol) ? 'fill-[--color-primary-yellow]' : 'fill-gray-400'" class="hover:fill-[--color-primary-yellow]" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M12 .587l3.668 7.568 8.332 1.151-6.064 5.828 1.48 8.279-7.416-3.967-7.417 3.967 1.481-8.279-6.064-5.828 8.332-1.151z"/></svg>
                         </span>
@@ -553,7 +557,7 @@
                                         {{ position.profitPercent >= 0 ? '+' : '' }}{{ position.profitPercent.toFixed(2) }}%
                                     </div>
                                 </div>
-                                <button @click="removePosition(index)" class="ml-2 text-red-500 hover:text-red-700 text-sm">
+                                <button @click="removePortfolioPosition(index)" class="ml-2 text-red-500 hover:text-red-700 text-sm">
                                     ✕
                                 </button>
                             </div>
@@ -563,48 +567,61 @@
             </div>
         </div>
 
-        <div v-if="showNewsScreen" class="news-screen-overlay">
-            <div class="news-screen-content">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-bold text-[--color-primary-silver]">Crypto News</h2>
-                <button @click="toggleNewsScreen" class="bg-red-500 text-white px-3 py-1 rounded">Close</button>
-            </div>
-
-            <div v-if="newsItems.length === 0" class="flex justify-center items-center h-[200px]">
-                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="var(--color-primary-yellow)" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <span>Loading news...</span>
-            </div>
-
-            <div v-else>
-                <div v-for="(item, index) in newsItems" :key="index" class="news-item">
-                <div class="news-item-title">{{ item.title }}</div>
-                <div class="news-item-source">{{ item.source }}</div>
-                <div class="news-item-content">{{ item.summary }}</div>
-                <div class="news-item-footer">
-                    <a :href="item.url" target="_blank" class="news-item-link">Read more</a>
-                    <span class="news-item-date" v-if="item.published_on">{{ formatNewsDate(item.published_on) }}</span>
-                    <span class="news-item-date" v-else>New</span>
+        <div v-if="showNewsScreen" class="fixed inset-0 bg-black bg-opacity-90 z-50 overflow-y-auto pb-24">
+            <div class="container mx-auto px-4 py-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-[--color-primary-silver]">Crypto News</h2>
+                    <div class="flex gap-4">
+                        <div class="relative">
+                            <select v-model="selectedNewsCategory" class="bg-[--color-bg--300] text-white px-4 py-2 rounded-lg border border-[--color-primary-purple]">
+                                <option value="">All Categories</option>
+                                <option value="Trading">Trading</option>
+                                <option value="Technology">Technology</option>
+                                <option value="Mining">Mining</option>
+                                <option value="Regulation">Regulation</option>
+                                <option value="Business">Business</option>
+                            </select>
+                        </div>
+                        <button @click="toggleNewsScreen" class="bg-red-500 text-white px-4 py-2 rounded-lg">Close</button>
+                    </div>
                 </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div v-for="item in filteredNewsItems" :key="item.id" 
+                        class="cb p-4 rounded-lg transition-transform hover:scale-[1.02]">
+                        <div class="relative">
+                            <img :src="item.imageurl" :alt="item.title" 
+                                class="w-full h-48 object-cover rounded-lg mb-4">
+                        </div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm text-[--color-primary-yellow]">{{item.categories}}</span>
+                            <span class="text-sm text-[--color-primary-silver]">{{formatNewsDate(item.published_on)}}</span>
+                        </div>
+                        <h3 class="text-lg font-bold mb-2 text-white">{{item.title}}</h3>
+                        <p class="text-sm text-[--color-primary-silver] mb-4">{{item.body.slice(0, 150)}}...</p>
+                        <div class="flex justify-between items-center">
+                            <a @click.prevent="openInTelegramWebApp(item.url)" 
+                                href="#" 
+                                class="text-[--color-primary-purple] hover:underline cursor-pointer">Read More</a>
+                            <span class="text-sm text-[--color-primary-silver]">Source: {{item.source}}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="newsLoading" class="flex justify-center items-center mt-8">
+                    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[--color-primary-purple]"></div>
+                </div>
+
+                <div v-if="!newsLoading && newsItems.length > 0" class="flex justify-center my-8">
+                    <button 
+                        v-if="!noMoreNews"
+                        @click="loadMoreNews" 
+                        class="bg-[--color-primary-purple] text-white px-6 py-3 rounded-lg hover:bg-opacity-80">
+                        Load More News
+                    </button>
+                    <span v-else class="text-[--color-primary-silver]">No more news available</span>
                 </div>
             </div>
-
-            <div v-if="newsItems.length > 0" class="flex justify-center mt-4 mb-4">
-                <button @click="loadMoreNews" class="load-more-news-button" :disabled="newsLoading">
-                <span v-if="!newsLoading">Load More</span>
-                <span v-else class="flex items-center justify-center">
-                    <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Loading...
-                </span>
-                </button>
-            </div>
-            </div>
-        </div>
         </div>
 
         <div class="fixed bottom-0 left-0 right-0 bg-[--color-primary-black] border-t-2 border-[--color-primary-purple] z-[150] py-3">
@@ -1218,31 +1235,71 @@
         },
         data() {
             return {
-                sock: null,
                 status: 0,
+                ticker: 'BTCUSDT',
                 tickers: {},
-                cache: [],
                 trades: [],
+                showLatestTrades: false,
+                asset: 'USDT',
+                inputSearch: '',
+                sort: 'assetVolume',
+                order: 'desc',
                 favorites: JSON.parse(localStorage.getItem('favorites')) || ['BTCUSDT'],
-                interval: '1d',
-                digitalClock: null,
+                showChartModal: false,
+                showOrderBookModal: false,
+                showShareModal: false,
+                showCalculator: false,
+                showPortfolio: false,
+                showNewsScreen: false,
+                newsItems: [],
+                newsLoading: false,
+                newsPage: 1,
+                noMoreNews: false,
+                selectedNewsCategory: '',
+                
+                calcSettings: {
+                    investment: null,
+                    initialPrice: null,
+                    projectedPrice: null,
+                    serviceFee: null,
+                    taxRate: null
+                },
+                coins: null,
+
+                portfolioForm: {
+                    searchQuery: '',
+                    selectedCoin: null,
+                    amount: '',
+                    buyPrice: ''
+                },
+                showPortfolioDropdown: false,
+                filteredPortfolioCoins: [],
+                portfolioPositions: JSON.parse(localStorage.getItem('portfolioPositions')) || [],
+                totalInvestment: 0,
+                currentValue: 0,
+                totalProfit: 0,
+                totalProfitPercent: 0,
+                lastUpdate: Date.now(),
+
+                container_id: 'chart_container_modal',
+                currentTimeframe: '1h',
+                chartModalInstance: null,
                 asks: [],
                 bids: [],
                 maxAsk: 0,
-                bgImageUrl: null,
-                showSettings: false,
-                showLatestTrades: true,
-                inputSearch: '',
-                asset: 'USDT', 
-                sort: 'token',
-                order: 'desc',
-                ticker: 'BTCUSDT',
-                container_id: 'vue-trading-view',
-                change: 'change',
+                selectedTickers: [],
+                tickerSearch: '',
+                shareAssetFilter: 'USDT',
+                orderBookSearchQuery: '',
+                showOrderBookDropdown: false,
+                filteredOrderBookCoins: [],
+                currentTicker: 'BTCUSDT',
+                showChartScreen: false,
+                fullscreenChartInstance: null,
                 options: {
                     autosize: true,
                     symbol: 'BINANCE:BTCUSDT',
-                    interval: '30',
+                    interval: '1h', 
                     timezone: 'Europe/Moscow',
                     theme: 'dark',
                     style: '1',
@@ -1253,65 +1310,29 @@
                     hide_side_toolbar: false,
                     allow_symbol_change: true,
                     save_image: true,
-                    details: false,
-                    hotlist: false,
+                    details: true,
+                    hotlist: true,
+                    calendar: true,
                     studies: [
                         {
-                            id: 'VWAP@tv-basicstudies',
+                            id: 'MAExp@tv-basicstudies',
+                            inputs: {
+                                length: 20
+                            }
                         },
                         {
                             id: 'MAExp@tv-basicstudies',
                             inputs: {
-                                length: 200
-                            },
-                            styles: {}
-                        }
+                                length: 50
+                            }
+                        },
+                        'RSI@tv-basicstudies',
+                        'MACD@tv-basicstudies',
+                        'StochasticRSI@tv-basicstudies'
                     ],
+                    container_id: 'chart_container_modal'
                 },
-                showOrderBookModal: false,
-                currentTicker: '',
-                showShareModal: false,
-                selectedTickers: [],
-                tickerSearch: '',
-                shareAssetFilter: 'USDT',
-                tonPrice: null,
-                tonUpdateInterval: null,
-                showCalculator: false,
-                calcSettings: {
-                    investment: null,
-                    initialPrice: null,
-                    projectedPrice: null,
-                    serviceFee: null,
-                    taxRate: null
-                },
-                coins: null,
-                orderBookSearchQuery: '',
-                showOrderBookDropdown: false,
-                filteredOrderBookCoins: [],
-                showPortfolio: false,
-                portfolioForm: {
-                    searchQuery: '',
-                    selectedCoin: null,
-                    amount: '',
-                    buyPrice: ''
-                },
-                portfolioPositions: [],
-                totalInvestment: 0,
-                currentValue: 0,
-                totalProfit: 0,
-                totalProfitPercent: 0,
-                lastUpdate: Date.now(),
-                
-                showChartModal: false,
-                currentTimeframe: '30',
-                chartModalInstance: null,
-                showChartScreen: false,
-                fullscreenChartInstance: null,
-                showNewsScreen: false,
-                newsItems: [],
-                newsPage: 1,
-                newsLoading: false,
-                
+
                 showMempoolModal: false,
                 mempoolLoading: false,
                 mempoolData: {
@@ -1329,13 +1350,18 @@
                 txLoading: false,
                 txData: null,
                 txError: null,
-
                 hashrateData: {
                     currentHashrate: 'N/A',
                     averageHashrate: 'N/A',
                     currentDifficulty: 'N/A'
                 },
-                mempoolLoading: false
+                apiKeys: JSON.parse(localStorage.getItem('apiKeys')) || {
+                    newsapi: '',
+                    gnews: '',
+                    bing: ''
+                },
+                showApiSettings: false,
+                tg: window.Telegram?.WebApp || null,
             }
         },
         methods: {
@@ -1445,22 +1471,21 @@
                 console.log('socket error:', e);
             },
             changeTicker(symbol) {
+                console.log('Changing ticker to:', symbol);
                 this.ticker = symbol;
                 this.currentTicker = symbol;
-                this.options.symbol = 'BINANCE:' + symbol;
+
                 if (window.tvWidget) {
                     window.tvWidget.setSymbol('BINANCE:' + symbol);
                 }
                 
-                if (this.showChartScreen && this.fullscreenChartInstance) {
-
+                if (this.showChartScreen && window.fullscreenChart) {
                     try {
-                        this.fullscreenChartInstance.setSymbol('BINANCE:' + symbol, () => {
-                            console.log('Chart symbol updated to', symbol);
+                        window.fullscreenChart.setSymbol('BINANCE:' + symbol, () => {
+                            console.log('Fullscreen chart symbol updated to', symbol);
                         });
                     } catch (e) {
-                        console.error('Error updating chart symbol:', e);
-
+                        console.error('Error updating fullscreen chart symbol:', e);
                         this.$nextTick(() => {
                             this.initFullscreenChart();
                         });
@@ -1506,13 +1531,16 @@
                 document.head.appendChild(script);
             },
             initWidget() {
-                const widget = new TradingView.widget({
-                    container_id: this.container_id,
-                    width: '100%', 
-                    height: '500px', 
-                    ...this.options
-                });
-                window.tvWidget = widget;
+                console.log('Initializing TradingView widget');
+                if (window.TradingView) {
+                    const widget = new TradingView.widget({
+                        ...this.options,
+                        interval: this.currentTimeframe ? this.getIntervalValue(this.currentTimeframe) : this.options.interval
+                    });
+                    window.tvWidget = widget;
+                } else {
+                    console.error('TradingView widget not available');
+                }
             },
             async prepareOrderBook() {
                 await fetch('https://api.binance.com/api/v3/depth?symbol=' + this.ticker + '&limit=100')
@@ -1616,16 +1644,22 @@
                 }
             },
             formatTickerPrice(ticker) {
+                const specialPriceTokens = ['PEPE', 'BONK', 'SHIB', '1000SATS', 'BTTC'];
+                const twoDecimalTokens = ['BTC', 'ETH', 'SOL', 'TRUMP', 'AVAX', 'TAO', 'PAXG', 'BCH', 'WBTC', 'ETC', 'ENS', 'INJ', 'MKR', 'LINK', 'COMP', 'QNT', 'EGLD', 'TRB', 'BNB', 'YFI', 'KSM', 'TAO', 'WBETH', 'DASH', 'GMX', 'ALCX', 'GNO', 'BIFI', 'EGLD', 'TRB', 'METIS', 'AUCTION', 'BANANA', 'ZEC', 'DEXE', 'ILV', 'BAR', 'BNSOL', 'ALCX', 'DCR', 'FARM'];
+            
                 let price;
-                if (ticker.symbol.endsWith('USDT')) {
-                    
-                    price = parseFloat(ticker.close).toFixed(4);
-                } else {
-                    price = ticker.close;
-                }
                 
-                if (ticker.symbol === 'BTCUSDT' || ticker.symbol === 'ETHUSDT') {
-                    console.log(`Formatted price for ${ticker.symbol}: ${price} (original: ${ticker.close})`);
+                if (ticker.symbol.endsWith('USDT')) {
+                    const token = ticker.symbol.split('USDT')[0];
+                    if (specialPriceTokens.includes(token)) {
+                        price = parseFloat(ticker.close).toFixed(5);
+                    } else if (twoDecimalTokens.includes(token)) {
+                        price = parseFloat(ticker.close).toFixed(2);
+                    } else {
+                        price = parseFloat(ticker.close).toFixed(4);
+                    }
+                } else {
+                    price = parseFloat(ticker.close).toFixed(8);
                 }
                 
                 return price;
@@ -1693,11 +1727,9 @@
                 }
             },
             toggleCalculator() {
-                
+                console.log('Toggling calculator');
                 if (!this.showCalculator) {
-                    
                     this.closeAllModals();
-                    
                     this.showCalculator = true;
                     document.body.style.overflow = 'hidden';
                     
@@ -1708,12 +1740,12 @@
                         }, 0);
                     }
                 } else {
-
                     this.showCalculator = false;
                     document.body.style.overflow = 'auto';
                 }
             },
             updateCalcSettings(settings) {
+                console.log('Updating calculator settings:', settings);
                 this.calcSettings = { ...settings };
                 localStorage.setItem('calcSettings', JSON.stringify(settings));
             },
@@ -1752,10 +1784,9 @@
                 }
             },
             togglePortfolio() {
+                console.log('Toggling portfolio');
                 if (!this.showPortfolio) {
-                    
                     this.closeAllModals();
-                    
                     this.showPortfolio = true;
                     document.body.style.overflow = 'hidden';
                     
@@ -1765,6 +1796,8 @@
                             if (portfolioModal) portfolioModal.classList.add('modal-on-chart');
                         }, 0);
                     }
+
+                    this.updatePortfolioTotals();
                 } else {
                     this.showPortfolio = false;
                     document.body.style.overflow = 'auto';
@@ -1789,42 +1822,36 @@
                     });
             },
             selectPortfolioCoin(ticker) {
-                this.portfolioForm.searchQuery = ticker.pair;
                 this.portfolioForm.selectedCoin = ticker;
+                this.portfolioForm.searchQuery = ticker.pair;
                 this.showPortfolioDropdown = false;
             },
             addPortfolioPosition() {
                 if (!this.portfolioForm.selectedCoin || !this.portfolioForm.amount || !this.portfolioForm.buyPrice) {
-                    console.log('Cannot add position: missing data', this.portfolioForm);
+                    alert('Please fill in all fields');
                     return;
                 }
 
-                const position = {
+                const newPosition = {
                     symbol: this.portfolioForm.selectedCoin.symbol,
-                    pair: this.portfolioForm.selectedCoin.pair,
                     amount: parseFloat(this.portfolioForm.amount),
-                    buyPrice: parseFloat(this.portfolioForm.buyPrice),
-                    currentPrice: 0,
-                    currentValue: 0,
-                    profit: 0,
-                    profitPercent: 0
+                    buyPrice: parseFloat(this.portfolioForm.buyPrice)
                 };
 
-                console.log('Adding position to portfolio:', position);
-                this.portfolioPositions.push(position);
-                
-                this.saveState();
+                this.portfolioPositions.push(newPosition);
+                localStorage.setItem('portfolioPositions', JSON.stringify(this.portfolioPositions));
 
-                this.portfolioForm.searchQuery = '';
                 this.portfolioForm.selectedCoin = null;
                 this.portfolioForm.amount = '';
                 this.portfolioForm.buyPrice = '';
+                this.portfolioForm.searchQuery = '';
+                this.showPortfolioDropdown = false;
 
                 this.updatePortfolioTotals();
             },
-            removePosition(index) {
+            removePortfolioPosition(index) {
                 this.portfolioPositions.splice(index, 1);
-                this.saveState(); 
+                localStorage.setItem('portfolioPositions', JSON.stringify(this.portfolioPositions));
                 this.updatePortfolioTotals();
             },
             saveState() {
@@ -1898,45 +1925,55 @@
                 }
             },
             updatePortfolioTotals() {
-                if (!this.portfolioPositions.length) {
-                    this.totalInvestment = 0;
-                    this.currentValue = 0;
-                    this.totalProfit = 0;
-                    this.totalProfitPercent = 0;
-                    return;
-                }
+                if (!this.portfolioPositions.length) return;
 
-                let totalInv = 0;
-                let currentVal = 0;
+                let totalInvestment = 0;
+                let currentValue = 0;
 
-                this.portfolioPositions = this.portfolioPositions.map(pos => {
-                    const ticker = this.tickers[pos.symbol];
+                this.portfolioPositions = this.portfolioPositions.map(position => {
+                    const ticker = this.tickers[position.symbol];
                     if (ticker) {
-                        const currentPrice = parseFloat(ticker.close);
-                        const currentValue = pos.amount * currentPrice;
-                        const investment = pos.amount * pos.buyPrice;
-                        const profit = currentValue - investment;
-                        const profitPercent = investment > 0 ? (profit / investment) * 100 : 0;
+                        const investment = position.amount * position.buyPrice;
+                        const current = position.amount * parseFloat(ticker.close);
+                        const profit = current - investment;
+                        const profitPercent = (profit / investment) * 100;
 
-                        totalInv += investment;
-                        currentVal += currentValue;
+                        totalInvestment += investment;
+                        currentValue += current;
 
                         return {
-                            ...pos,
-                            currentPrice,
-                            currentValue,
-                            investment,
-                            profit,
-                            profitPercent
+                            ...position,
+                            currentPrice: parseFloat(ticker.close),
+                            currentValue: current,
+                            profit: profit,
+                            profitPercent: profitPercent,
+                            profitColor: profit >= 0 ? 'text-[--color-primary-green]' : 'text-[--color-primary--500]',
+                            profitSign: profit >= 0 ? '+' : ''
                         };
                     }
-                    return pos;
+                    return position;
                 });
 
-                this.totalInvestment = totalInv;
-                this.currentValue = currentVal;
-                this.totalProfit = this.currentValue - this.totalInvestment;
-                this.totalProfitPercent = this.totalInvestment > 0 ? (this.totalProfit / this.totalInvestment) * 100 : 0;
+                this.totalInvestment = totalInvestment;
+                this.currentValue = currentValue;
+                this.totalProfit = currentValue - totalInvestment;
+                this.totalProfitPercent = totalInvestment > 0 ? 
+                    ((currentValue - totalInvestment) / totalInvestment) * 100 : 0;
+
+                localStorage.setItem('portfolioPositions', JSON.stringify(this.portfolioPositions));
+                this.lastUpdate = Date.now();
+            },
+            formatPortfolioNumber(number, decimals = 2) {
+                if (typeof number !== 'number') return '0.00';
+                return number.toFixed(decimals);
+            },
+            getPositionProfitClass(position) {
+                if (!position.profit) return '';
+                return position.profit >= 0 ? 'text-[--color-primary-green]' : 'text-[--color-primary--500]';
+            },
+            getPositionProfitSign(position) {
+                if (!position.profit) return '';
+                return position.profit >= 0 ? '+' : '';
             },
             savePortfolio() {
                 console.log('Saving portfolio:', this.portfolio);
@@ -1969,12 +2006,18 @@
             },
             
             toggleChartModal() {
-                this.showChartModal = !this.showChartModal;
-                if (this.showChartModal) {
-
+                console.log('Toggling chart modal');
+                if (!this.showChartModal) {
+                    this.closeAllModals();
+                    this.showChartModal = true;
+                    document.body.style.overflow = 'hidden';
+                    
                     this.$nextTick(() => {
-                        this.initChartModal();
+                        this.initWidget();
                     });
+                } else {
+                    this.showChartModal = false;
+                    document.body.style.overflow = 'auto';
                 }
             },
             handleChartModalClick(event) {
@@ -1983,45 +2026,27 @@
                     this.toggleChartModal();
                 }
             },
-            initChartModal() {
-
-                const chartContainerId = 'chart_container_modal';
-                const container = document.getElementById(chartContainerId);
-                
-                if (container && window.TradingView) {
-
-                    if (this.chartModalInstance) {
-                        this.chartModalInstance.remove();
-                        this.chartModalInstance = null;
-                    }
-                    
-                    this.chartModalInstance = new window.TradingView.widget({
-                        container_id: chartContainerId,
-                        autosize: true,
-                        symbol: 'BINANCE:' + this.ticker,
-                        interval: this.currentTimeframe,
-                        timezone: 'Etc/UTC',
-                        theme: 'dark',
-                        style: '1',
-                        locale: 'en',
-                        toolbar_bg: '#f1f3f6',
-                        enable_publishing: false,
-                        allow_symbol_change: true,
-                        save_image: false,
-                        studies: ['RSI@tv-basicstudies'],
-                        show_popup_button: true,
-                        popup_width: '1000',
-                        popup_height: '650'
-                    });
-                } else {
-                    console.error('TradingView widget not available or container not found');
-                }
-            },
             setTimeframe(timeframe) {
+                console.log('Setting timeframe:', timeframe);
                 this.currentTimeframe = timeframe;
-                if (this.chartModalInstance) {
-
-                    this.chartModalInstance.setInterval(timeframe);
+                const intervalMap = {
+                    '1m': '1',
+                    '5m': '5',
+                    '15m': '15',
+                    '1h': '60',
+                    '4h': '240',
+                    '1d': 'D',
+                    '1w': 'W'
+                };
+                
+                const interval = intervalMap[timeframe] || '60'; 
+                
+                if (window.tvWidget) {
+                    window.tvWidget.setInterval(interval);
+                }
+                
+                if (this.fullscreenChartInstance) {
+                    this.fullscreenChartInstance.setInterval(interval);
                 }
             },
             setChartTimeframe(timeframe) {
@@ -2098,26 +2123,19 @@
                 const container = document.getElementById(chartContainerId);
                 
                 if (container && window.TradingView) {
-
-                    new TradingView.widget({
+                    console.log('Initializing fullscreen chart with symbol:', this.ticker);
+                    
+                    this.fullscreenChartInstance = new TradingView.widget({
+                        ...this.options,
                         container_id: chartContainerId,
-                        width: '100%', 
-                        height: '100%', 
-                        symbol: this.options.symbol,
-                        interval: this.options.interval,
-                        timezone: this.options.timezone,
-                        theme: this.options.theme,
-                        style: this.options.style,
-                        locale: this.options.locale,
-                        toolbar_bg: this.options.toolbar_bg,
-                        enable_publishing: this.options.enable_publishing,
-                        withdateranges: true,
-                        hide_side_toolbar: this.options.hide_side_toolbar,
-                        allow_symbol_change: true,
-                        save_image: true,
-                        details: this.options.details,
-                        hotlist: this.options.hotlist,
-                        studies: this.options.studies
+                        width: '100%',
+                        height: '100%',
+                        symbol: 'BINANCE:' + (this.ticker || 'BTCUSDT'),
+                        interval: this.currentTimeframe ? this.getIntervalValue(this.currentTimeframe) : this.options.interval,
+                        onChartReady: () => {
+                            console.log('Fullscreen chart ready');
+                            window.fullscreenChart = this.fullscreenChartInstance;
+                        }
                     });
                 }
             },
@@ -2143,163 +2161,276 @@
                 document.body.style.overflow = 'auto';
             },
             formatDisplayPrice(ticker) {
+                const specialPriceTokens = ['PEPE', 'BONK', 'SHIB', '1000SATS', 'BTTC'];
+                const twoDecimalTokens = ['BTC', 'ETH', 'SOL', 'TRUMP', 'AVAX', 'TAO', 'PAXG', 'BCH', 'WBTC', 'ETC', 'ENS', 'INJ', 'MKR', 'LINK', 'COMP', 'QNT', 'EGLD', 'TRB', 'BNB', 'YFI', 'KSM', 'TAO', 'WBETH', 'DASH', 'GMX', 'ALCX', 'GNO', 'BIFI', 'EGLD', 'TRB', 'METIS', 'AUCTION', 'BANANA', 'ZEC', 'DEXE', 'ILV', 'BAR', 'BNSOL', 'ALCX', 'DCR', 'FARM'];
+            
                 let price;
-                if (ticker.symbol.endsWith('USDT')) {
-                    price = parseFloat(ticker.close).toFixed(4);
-                } else {
-                    
-                    price = ticker.close;
-                }
                 
-                if (ticker.symbol === 'BTCUSDT' || ticker.symbol === 'ETHUSDT') {
-                    console.log(`Formatted display price for ${ticker.symbol}: ${price} (original: ${ticker.close})`);
+                if (ticker.symbol.endsWith('USDT')) {
+                    const token = ticker.symbol.split('USDT')[0];
+                    if (specialPriceTokens.includes(token)) {
+                        price = parseFloat(ticker.close).toFixed(5);
+                    } else if (twoDecimalTokens.includes(token)) {
+                        price = parseFloat(ticker.close).toFixed(2);
+                    } else {
+                        price = parseFloat(ticker.close).toFixed(4);
+                    }
+                } else {
+                    price = parseFloat(ticker.close).toFixed(8);
                 }
                 
                 return price;
             },
             toggleNewsScreen() {
-                
+                console.log('toggleNewsScreen called');
                 if (!this.showNewsScreen) {
-                    
+                    console.log('Opening news screen');
                     this.closeAllModals();
-                    
                     this.showNewsScreen = true;
+                    this.newsPage = 1;
+                    this.newsItems = [];
+                    this.selectedNewsCategory = '';
                     
-                    if (this.newsItems.length === 0) {
-                        this.newsPage = 1;
-                        this.loadNews();
-                    }
+                    console.log('Current state:', {
+                        showNewsScreen: this.showNewsScreen,
+                        newsPage: this.newsPage,
+                        newsItems: this.newsItems.length,
+                        selectedNewsCategory: this.selectedNewsCategory
+                    });
+                    
+                    this.$nextTick(() => {
+                        console.log('Loading news after nextTick');
+                        this.loadNews().catch(error => {
+                            console.error('Error in loadNews:', error);
+                            alert('Failed to load news. Please try again.');
+                        });
+                    });
                 } else {
+                    console.log('Closing news screen');
                     this.showNewsScreen = false;
                 }
             },
             
             async loadNews() {
+                console.log('Starting loadNews...');
                 try {
-                    if (this.newsLoading) return;
-                    this.newsLoading = true;
-                    
-                    console.log(`Loading news for page ${this.newsPage}`);
-                    
-                    let apiUrl = 'https://min-api.cryptocompare.com/data/v2/news/?lang=EN';
-                    
-                    if (this.newsPage === 1) {
-                        apiUrl += '&sortOrder=latest';
-                    } 
-                    else if (this.newsItems.length > 0) {
-                        
-                        const oldestItem = [...this.newsItems].sort((a, b) => a.published_on - b.published_on)[0];
-                        
-                        apiUrl += `&sortOrder=latest&toTs=${oldestItem.published_on - 1}`;
-                        console.log(`Getting news older than ${new Date(oldestItem.published_on * 1000).toLocaleString()}`);
+                    if (this.newsLoading) {
+                        console.log('Already loading news, skipping...');
+                        return;
                     }
                     
-                    console.log(`API URL: ${apiUrl}`);
+                    this.newsLoading = true;
+                    console.log('Setting newsLoading to true');
+                    
+                    const apiUrl = new URL('https://min-api.cryptocompare.com/data/v2/news/');
+                    const params = {
+                        lang: 'EN',
+                        sortOrder: 'latest',
+                        feeds: 'cointelegraph,coindesk,bitcoinist',
+                        limit: 20
+                    };
+                    
+                    if (this.newsPage > 1 && this.newsItems.length > 0) {
+                        const oldestItem = [...this.newsItems].sort((a, b) => a.published_on - b.published_on)[0];
+                        params.toTs = oldestItem.published_on - 1;
+                        console.log('Loading older news before:', new Date(oldestItem.published_on * 1000));
+                    }
+                    
+                    Object.keys(params).forEach(key => apiUrl.searchParams.append(key, params[key]));
+                    console.log('Fetching news from:', apiUrl.toString());
                     
                     const response = await fetch(apiUrl);
-                    const data = await response.json();
+                    console.log('Response status:', response.status);
                     
-                    if (data.Data && Array.isArray(data.Data) && data.Data.length > 0) {
-                        console.log(`Received ${data.Data.length} news items`);
-                        
-                        if (data.Data.length > 0) {
-                            const firstDate = new Date(data.Data[0].published_on * 1000);
-                            const lastDate = new Date(data.Data[data.Data.length-1].published_on * 1000);
-                            console.log(`News date range: ${firstDate.toLocaleString()} - ${lastDate.toLocaleString()}`);
-                        }
-                        
-                        if (this.newsPage === 1) {
-                            this.newsItems = data.Data;
-                        } 
-                        
-                        else {
-                            const existingIds = new Set(this.newsItems.map(item => item.id));
-                            
-                            
-                            const newItems = data.Data.filter(item => !existingIds.has(item.id));
-                            console.log(`Found ${newItems.length} new unique articles`);
-                            
-                            if (newItems.length > 0) {
-                                this.newsItems = [...this.newsItems, ...newItems];
-                            } else {
-                                console.log("No new articles found, may need to look further back");
-                            }
-                        }
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    console.log('Received data:', data);
+                    
+                    if (!data.Data || !Array.isArray(data.Data)) {
+                        console.error('Invalid response format:', data);
+                        throw new Error('Invalid response format from API');
+                    }
+                    
+                    if (data.Data.length === 0) {
+                        console.log('No more news available');
+                        this.noMoreNews = true;
+                        return;
+                    }
+                    
+                    console.log(`Processing ${data.Data.length} news items`);
+                    
+                    const processedNews = data.Data.map(item => {
+                        console.log('Processing item:', item.id);
+                        return {
+                            ...item,
+                            categories: (item.categories || '').split('|')
+                                .filter(Boolean)
+                                .slice(0, 5)
+                                .join(', '),
+                            body: (item.body || '').replace(/<[^>]*>/g, ''),
+                            imageurl: item.imageurl || 'https://via.placeholder.com/300x200?text=No+Image'
+                        };
+                    });
+                    
+                    if (this.newsPage === 1) {
+                        console.log('Setting initial news items');
+                        this.newsItems = processedNews;
                     } else {
-                        console.log("No news found or end of available news reached");
+                        console.log('Adding more news items');
+                        const existingIds = new Set(this.newsItems.map(item => item.id));
+                        const newItems = processedNews.filter(item => !existingIds.has(item.id));
+                        
+                        if (newItems.length > 0) {
+                            console.log(`Adding ${newItems.length} new items`);
+                            this.newsItems = [...this.newsItems, ...newItems];
+                        } else {
+                            console.log('No new items to add');
+                            this.noMoreNews = true;
+                        }
                     }
                 } catch (error) {
                     console.error('Error loading news:', error);
+                    alert('Failed to load news. Please try again later.');
                 } finally {
+                    console.log('Setting newsLoading to false');
                     this.newsLoading = false;
                 }
             },
+
+            async loadCryptoCompareNews() {
+                const apiUrl = new URL('https://min-api.cryptocompare.com/data/v2/news/');
+                const params = {
+                    lang: 'EN',
+                    sortOrder: 'latest',
+                    feeds: 'cointelegraph,coindesk,bitcoinist',
+                    limit: 20
+                };
+                
+                if (this.newsPage > 1 && this.newsItems.length > 0) {
+                    const oldestItem = [...this.newsItems].sort((a, b) => a.published_on - b.published_on)[0];
+                    params.toTs = oldestItem.published_on - 1;
+                }
+                
+                Object.keys(params).forEach(key => apiUrl.searchParams.append(key, params[key]));
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+                
+                if (!data.Data || !Array.isArray(data.Data)) return [];
+                
+                return data.Data.map(item => ({
+                    ...item,
+                    id: `cc-${item.id}`,
+                    source: 'CryptoCompare',
+                    categories: (item.categories || '').split('|')
+                        .filter(Boolean)
+                        .slice(0, 5)
+                        .join(', '),
+                    body: (item.body || '').replace(/<[^>]*>/g, ''),
+                    imageurl: item.imageurl || 'https://via.placeholder.com/300x200?text=No+Image'
+                }));
+            },
+
+            async loadCoinGeckoNews() {
+                try {
+                    const response = await fetch('https://api.coingecko.com/api/v3/news');
+                    const data = await response.json();
+                    
+                    return data.map(item => ({
+                        id: `cg-${item.id}`,
+                        title: item.title,
+                        body: item.description,
+                        published_on: Math.floor(new Date(item.published_at).getTime() / 1000),
+                        url: item.url,
+                        imageurl: item.thumb_2x || 'https://via.placeholder.com/300x200?text=No+Image',
+                        source: 'CoinGecko',
+                        categories: item.categories?.slice(0, 5).join(', ') || '',
+                        author: item.author
+                    }));
+                } catch (error) {
+                    console.error('Error fetching CoinGecko news:', error);
+                    return [];
+                }
+            },
+
+            async loadMessariNews() {
+                try {
+                    const response = await fetch('https://data.messari.io/api/v1/news');
+                    const data = await response.json();
+                    
+                    return data.data.map(item => ({
+                        id: `ms-${item.id}`,
+                        title: item.title,
+                        body: item.content,
+                        published_on: Math.floor(new Date(item.published_at).getTime() / 1000),
+                        url: item.url,
+                        imageurl: item.lead_image_url || 'https://via.placeholder.com/300x200?text=No+Image',
+                        source: 'Messari',
+                        categories: item.tags?.slice(0, 5).join(', ') || '',
+                        author: item.author?.name
+                    }));
+                } catch (error) {
+                    console.error('Error fetching Messari news:', error);
+                    return [];
+                }
+            },
             
-            loadMoreNews() {
+            async loadMoreNews() {
+                if (this.noMoreNews) {
+                    console.log('No more news available');
+                    return;
+                }
                 this.newsPage++;
-                this.loadNews();
+                await this.loadNews(); 
             },
             
             formatNewsDate(timestamp) {
                 if (!timestamp) return "No date";
                 
-                try {
-                    let date;
-                    
-                    if (!isNaN(timestamp) && !isNaN(parseFloat(timestamp))) {
-                        const ts = Number(timestamp);
-                        date = new Date(ts < 10000000000 ? ts * 1000 : ts);
-                    } else {
-                        date = new Date(timestamp);
-                    }
-                    
-                    if (isNaN(date.getTime())) {
-                        return "No date";
-                    }
-                    
-                    return date.getDate() + '/' + (date.getMonth() + 1);
-                    
-                } catch (error) {
-                    return "No date";
+                const date = new Date(timestamp * 1000);
+                const now = new Date();
+                const diff = Math.floor((now - date) / 1000);
+                
+                if (diff < 60) {
+                    return 'Just now';
+                } else if (diff < 3600) {
+                    const minutes = Math.floor(diff / 60);
+                    return `${minutes}m ago`;
+                } else if (diff < 86400) {
+                    const hours = Math.floor(diff / 3600);
+                    return `${hours}h ago`;
+                } else if (diff < 604800) {
+                    const days = Math.floor(diff / 86400);
+                    return `${days}d ago`;
+                } else {
+                    return date.toLocaleDateString('en-US', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric'
+                    });
                 }
             },
             
             toggleMempoolModal() {
-                
+                console.log('Toggling mempool modal');
                 if (!this.showMempoolModal) {
-                    
                     this.closeAllModals();
-                    
                     this.showMempoolModal = true;
-                    document.body.style.overflow = 'hidden';
-                    
-                    this.fetchMempoolData();
-                    
-                    if (this.showChartScreen) {
-                        setTimeout(() => {
-                            const mempoolModal = document.getElementById('mempoolModal');
-                            if (mempoolModal) mempoolModal.classList.add('modal-on-chart');
-                        }, 0);
-                    }
-                    
-                    const navButtons = document.querySelectorAll('.nav-button');
-                    navButtons.forEach(button => {
-                        button.addEventListener('click', this.closeMempoolOnNavClick);
-                    });
+                    this.loadMempoolData();
                 } else {
-                    
-                    this.closeMempoolModal();
+                    this.showMempoolModal = false;
                 }
             },
             
             closeMempoolModal() {
                 this.showMempoolModal = false;
-                document.body.style.overflow = 'auto';
-                
-                const navButtons = document.querySelectorAll('.nav-button');
-                navButtons.forEach(button => {
-                    button.removeEventListener('click', this.closeMempoolOnNavClick);
-                });
+                this.mempoolLoading = false;
+                this.addressData = null;
+                this.addressError = null;
+                this.txData = null;
+                this.txError = null;
             },
             
             closeMempoolOnNavClick() {
@@ -2308,144 +2439,45 @@
                 }
             },
             
-            async fetchMempoolData() {
-                this.mempoolLoading = true;
-                
+            async loadMempoolData() {
+                console.log('Loading mempool data');
                 try {
-                    // Fetch difficulty adjustment
+                    this.mempoolLoading = true;
+
                     const difficultyResponse = await fetch('https://mempool.space/api/v1/difficulty-adjustment');
-                    if (!difficultyResponse.ok) {
-                        throw new Error(`HTTP error! status: ${difficultyResponse.status}`);
-                    }
                     const difficultyData = await difficultyResponse.json();
                     this.mempoolData.difficultyAdjustment = difficultyData;
-                    console.log('Difficulty data loaded:', difficultyData);
-                    
-                    // Fetch prices
+
                     const pricesResponse = await fetch('https://mempool.space/api/v1/prices');
-                    if (!pricesResponse.ok) {
-                        throw new Error(`HTTP error! status: ${pricesResponse.status}`);
-                    }
                     const pricesData = await pricesResponse.json();
                     this.mempoolData.prices = pricesData;
-                    console.log('Prices data loaded:', pricesData);
-                    
-                    // Fetch blocks
-                    const blocksResponse = await fetch('https://mempool.space/api/v1/blocks');
-                    if (!blocksResponse.ok) {
-                        throw new Error(`HTTP error! status: ${blocksResponse.status}`);
-                    }
+
+                    const blocksResponse = await fetch('https://mempool.space/api/blocks');
                     const blocksData = await blocksResponse.json();
-                    this.mempoolData.blocks = blocksData.slice(0, 5); // Get only the 5 latest blocks
-                    console.log('Blocks data loaded:', blocksData.slice(0, 5));
-                    
-                    // Fetch mining pools
-                    await this.fetchMiningPools();
+                    this.mempoolData.blocks = blocksData.slice(0, 10);
 
-                    const hashrateResponse = await fetch('https://mempool.space/api/v1/mining/hashrate/1m');
-                    if (!hashrateResponse.ok) {
-                        throw new Error(`HTTP error! status: ${hashrateResponse.status}`);
-                    }
+                    const poolsResponse = await fetch(`https://mempool.space/api/v1/mining/pools/${this.miningPoolsPeriod}`);
+                    const poolsData = await poolsResponse.json();
+                    this.mempoolData.miningPools = poolsData;
+
+                    const hashrateResponse = await fetch('https://mempool.space/api/v1/mining/hashrate/3d');
                     const hashrateData = await hashrateResponse.json();
-                    console.log('Hashrate data loaded:', hashrateData);
+                    if (hashrateData.currentHashrate) {
+                        this.hashrateData.currentHashrate = this.formatHashrate(hashrateData.currentHashrate);
+                        this.hashrateData.averageHashrate = this.formatHashrate(hashrateData.averageHashrate);
+                        this.hashrateData.currentDifficulty = this.formatDifficulty(hashrateData.currentDifficulty);
+                    }
 
-                    // Process hashrate data
-                    const currentHashrateEH = (hashrateData.currentHashrate / 1e18).toFixed(2);
-                    const avgHashrateEH = (hashrateData.averageHashrate / 1e18).toFixed(2);
-                    const difficultyT = (hashrateData.currentDifficulty / 1e12).toFixed(2);
-
-                    this.hashrateData = {
-                        currentHashrate: `${currentHashrateEH} EH/s`,
-                        averageHashrate: `${avgHashrateEH} EH/s`,
-                        currentDifficulty: `${difficultyT} T`
-                    };
                 } catch (error) {
-                    console.error('Error fetching mempool data:', error);
+                    console.error('Error loading mempool data:', error);
                 } finally {
                     this.mempoolLoading = false;
                 }
             },
             
-            async fetchMiningPools() {
-                try {
-                    const poolsResponse = await fetch(`https://mempool.space/api/v1/mining/pools/${this.miningPoolsPeriod}`);
-                    if (!poolsResponse.ok) {
-                        throw new Error(`HTTP error! status: ${poolsResponse.status}`);
-                    }
-                    const poolsData = await poolsResponse.json();
-                    
-                    if (Array.isArray(poolsData)) {
-                        this.mempoolData.miningPools = poolsData
-                            .sort((a, b) => b.blockCount - a.blockCount) // Sort by block count descending
-                            .map(pool => ({
-                                ...pool,
-                                share: pool.blockCount / poolsData.reduce((sum, p) => sum + p.blockCount, 0)
-                            }));
-                        console.log('Mining pools data loaded:', this.mempoolData.miningPools.slice(0, 3)); 
-                    } else {
-                        console.error('Mining pools data is not an array:', poolsData);
-                        this.mempoolData.miningPools = [];
-                    }
-                } catch (error) {
-                    console.error('Error fetching mining pools:', error);
-                    this.mempoolData.miningPools = [];
-                }
-            },
-
-            changeMiningPoolsPeriod(period) {
-                this.miningPoolsPeriod = period;
-                this.fetchMiningPools();
-            },
-
-            formatHashrate(hashrate) {
-                if (!hashrate) return 'N/A';
-                
-                const units = ['H/s', 'KH/s', 'MH/s', 'GH/s', 'TH/s', 'PH/s', 'EH/s'];
-                let unitIndex = 0;
-                
-                while (hashrate >= 1000 && unitIndex < units.length - 1) {
-                    hashrate /= 1000;
-                    unitIndex++;
-                }
-                
-                return `${hashrate.toFixed(2)} ${units[unitIndex]}`;
-            },
-
-            getPoolColor(index) {
-                // Generate colors for mining pools
-                const colors = [
-                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
-                    '#FF9F40', '#8AC054', '#4D5360', '#E7E9ED', '#F7464A'
-                ];
-                return colors[index % colors.length];
-            },
-            
-            async lookupBtcAddress() {
-                if (!this.btcAddressInput || this.btcAddressInput.trim() === '') {
+            async lookupAddress() {
+                if (!this.btcAddressInput.trim()) {
                     this.addressError = 'Please enter a Bitcoin address';
-                    return;
-                }
-                
-                this.addressLoading = true;
-                this.addressError = null;
-                this.addressData = null;
-                
-                try {
-                    // Fetch address data
-                    const addressResponse = await fetch(`https://mempool.space/api/address/${this.btcAddressInput.trim()}`);
-                    console.log('Address lookup response status:', addressResponse.status);
-                    
-                    if (!addressResponse.ok) {
-                        throw new Error(`HTTP error! status: ${addressResponse.status}`);
-                    }
-                    
-                    const addressData = await addressResponse.json();
-                    console.log('Address data loaded:', addressData);
-                    this.addressData = addressData;
-                } catch (error) {
-                    console.error('Error looking up address:', error);
-                    this.addressError = 'Error looking up address: ' + error.message;
-                } finally {
                     this.addressLoading = false;
                 }
             },
@@ -2496,7 +2528,6 @@
                 this.txData = null;
                 
                 try {
-                    // Fetch transaction data
                     const txResponse = await fetch(`https://mempool.space/api/tx/${this.txIdInput.trim()}`);
                     console.log('Transaction lookup response status:', txResponse.status);
                     
@@ -2512,6 +2543,174 @@
                     this.txError = 'Error looking up transaction: ' + error.message;
                 } finally {
                     this.txLoading = false;
+                }
+            },
+            filteredNewsItems() {
+                if (!this.newsItems || !Array.isArray(this.newsItems)) {
+                    console.log('newsItems is not an array:', this.newsItems);
+                    return [];
+                }
+                
+                console.log('Filtering news items. Total:', this.newsItems.length);
+                console.log('Selected category:', this.selectedNewsCategory);
+                
+                return this.newsItems.filter(item => {
+                    if (!this.selectedNewsCategory) return true;
+                    return item.categories && item.categories.toLowerCase().includes(this.selectedNewsCategory.toLowerCase());
+                }).sort((a, b) => {
+                    return b.published_on - a.published_on;
+                });
+            },
+            formatHashrate(hashrate) {
+                if (typeof hashrate !== 'number') return 'N/A';
+                const units = ['H/s', 'KH/s', 'MH/s', 'GH/s', 'TH/s', 'PH/s', 'EH/s'];
+                let unitIndex = 0;
+                while (hashrate >= 1000 && unitIndex < units.length - 1) {
+                    hashrate /= 1000;
+                    unitIndex++;
+                }
+                return `${hashrate.toFixed(2)} ${units[unitIndex]}`;
+            },
+
+            formatDifficulty(difficulty) {
+                if (typeof difficulty !== 'number') return 'N/A';
+                return difficulty.toLocaleString();
+            },
+
+            getPoolColor(index) {
+                const colors = [
+                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+                    '#FF9F40', '#8AC054', '#4D5360', '#E7E9ED', '#F7464A'
+                ];
+                return colors[index % colors.length];
+            },
+
+            formatBitcoinAmount(amount) {
+                if (typeof amount !== 'number') return '0';
+                return (amount / 100000000).toFixed(8);
+            },
+
+            formatTimestamp(timestamp) {
+                if (!timestamp) return '';
+                const date = new Date(timestamp * 1000);
+                return date.toLocaleString();
+            },
+
+            changeMiningPoolsPeriod(period) {
+                this.miningPoolsPeriod = period;
+                this.loadMempoolData();
+            },
+
+            async loadNewsApiAI() {
+                try {
+                    const response = await fetch(`https://newsapi.org/v2/everything?q=artificial+intelligence+OR+machine+learning&language=en&sortBy=publishedAt&pageSize=20&page=${this.newsPage}`, {
+                        headers: {
+                            'X-Api-Key': this.apiKeys.newsapi
+                        }
+                    });
+                    const data = await response.json();
+                    
+                    if (!data.articles) return [];
+                    
+                    return data.articles.map(item => ({
+                        id: `na-${item.url}`,
+                        title: item.title,
+                        body: item.description || item.content,
+                        published_on: Math.floor(new Date(item.publishedAt).getTime() / 1000),
+                        url: item.url,
+                        imageurl: item.urlToImage || 'https://via.placeholder.com/300x200?text=No+Image',
+                        source: `NewsAPI - ${item.source.name}`,
+                        categories: 'AI, Technology',
+                        author: item.author
+                    }));
+                } catch (error) {
+                    console.error('Error fetching NewsAPI:', error);
+                    return [];
+                }
+            },
+
+            async loadGNewsAI() {
+                try {
+                    const response = await fetch(`https://gnews.io/api/v4/search?q=artificial+intelligence+OR+machine+learning&lang=en&max=20&page=${this.newsPage}&token=${this.apiKeys.gnews}`);
+                    const data = await response.json();
+                    
+                    if (!data.articles) return [];
+                    
+                    return data.articles.map(item => ({
+                        id: `gn-${item.url}`,
+                        title: item.title,
+                        body: item.description,
+                        published_on: Math.floor(new Date(item.publishedAt).getTime() / 1000),
+                        url: item.url,
+                        imageurl: item.image || 'https://via.placeholder.com/300x200?text=No+Image',
+                        source: `GNews - ${item.source.name}`,
+                        categories: 'AI, Technology',
+                        author: item.source.name
+                    }));
+                } catch (error) {
+                    console.error('Error fetching GNews:', error);
+                    return [];
+                }
+            },
+
+            async loadBingNewsAI() {
+                try {
+                    const response = await fetch('https://api.bing.microsoft.com/v7.0/news/search?q=artificial+intelligence+machine+learning&count=20&offset=' + ((this.newsPage - 1) * 20), {
+                        headers: {
+                            'Ocp-Apim-Subscription-Key': this.apiKeys.bing
+                        }
+                    });
+                    const data = await response.json();
+                    
+                    if (!data.value) return [];
+                    
+                    return data.value.map(item => ({
+                        id: `bn-${item.url}`,
+                        title: item.name,
+                        body: item.description,
+                        published_on: Math.floor(new Date(item.datePublished).getTime() / 1000),
+                        url: item.url,
+                        imageurl: item.image?.thumbnail?.contentUrl || 'https://via.placeholder.com/300x200?text=No+Image',
+                        source: `Bing News - ${item.provider[0].name}`,
+                        categories: 'AI, Technology',
+                        author: item.provider[0].name
+                    }));
+                } catch (error) {
+                    console.error('Error fetching Bing News:', error);
+                    return [];
+                }
+            },
+
+            toggleApiSettings() {
+                this.showApiSettings = !this.showApiSettings;
+            },
+
+            saveApiKeys() {
+                localStorage.setItem('apiKeys', JSON.stringify(this.apiKeys));
+                this.showApiSettings = false;
+                this.newsPage = 1;
+                this.newsItems = [];
+                this.noMoreNews = false;
+                this.loadNews();
+            },
+
+            getIntervalValue(timeframe) {
+                const intervalMap = {
+                    '1m': '1',
+                    '5m': '5',
+                    '15m': '15',
+                    '1h': '60',
+                    '4h': '240',
+                    '1d': 'D',
+                    '1w': 'W'
+                };
+                return intervalMap[timeframe] || '60'; 
+            },
+            openInTelegramWebApp(url) {
+                if (window.Telegram?.WebApp) {
+                    window.Telegram.WebApp.openLink(url);
+                } else {
+                    window.open(url, '_blank');
                 }
             },
         },
@@ -2547,6 +2746,11 @@
             axios.get('https://api.coinranking.com/v1/public/coins?base=USD&timePeriod=24h').then(response => {
                 this.coins = response.data.data.coins;
             });
+
+            if (window.Telegram?.WebApp) {
+                this.tg = window.Telegram.WebApp;
+                console.log('Telegram WebApp initialized:', this.tg);
+            }
         },
         beforeUnmount() {
             this.sockClose();
@@ -2568,6 +2772,22 @@
                     msg = 'Done';
                 }
                 return msg;
+            },
+            filteredNewsItems() {
+                if (!this.newsItems || !Array.isArray(this.newsItems)) {
+                    console.log('newsItems is not an array:', this.newsItems);
+                    return [];
+                }
+                
+                console.log('Filtering news items. Total:', this.newsItems.length);
+                console.log('Selected category:', this.selectedNewsCategory);
+                
+                return this.newsItems.filter(item => {
+                    if (!this.selectedNewsCategory) return true;
+                    return item.categories && item.categories.toLowerCase().includes(this.selectedNewsCategory.toLowerCase());
+                }).sort((a, b) => {
+                    return b.published_on - a.published_on;
+                });
             },
             filterTickers() {
                 let tickers = Object.values(this.tickers);
@@ -2613,6 +2833,18 @@
                 }
                 
                 return tickers;
+            }
+        },
+        watch: {
+            newsSources: {
+                handler(newVal) {
+                    localStorage.setItem('newsSources', JSON.stringify(newVal));
+                    this.newsPage = 1;
+                    this.newsItems = [];
+                    this.noMoreNews = false;
+                    this.loadNews();
+                },
+                deep: true
             }
         }
     }).mount('#app')
@@ -3251,17 +3483,189 @@
 
     .latest-blocks-table td,
     .latest-blocks-table th {
-        font-size: 0.9rem; /* Размер по умолчанию */
-        padding: 0.5rem; /* Уменьшенные отступы */
+        font-size: 0.9rem; 
+        padding: 0.5rem; 
     }
 
-     /* Для мобильных устройств */
     @media (max-width: 768px) {
         .latest-blocks-table td,
         .latest-blocks-table th {
-            font-size: 0.75rem; /* Меньший размер шрифта */
-            padding: 0.3rem; /* Уменьшенные отступы */
+            font-size: 0.75rem; 
+            padding: 0.3rem; 
         }
+    }
+
+    .news-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .news-card {
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.3s ease;
+    }
+
+    .news-card:hover {
+        transform: translateY(-4px);
+    }
+
+    .news-image {
+        position: relative;
+        padding-top: 56.25%;
+        overflow: hidden;
+    }
+
+    .news-image img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .news-card:hover .news-image img {
+        transform: scale(1.05);
+    }
+
+    .news-favorite-btn {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        z-index: 10;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+
+    .news-card:hover .news-favorite-btn {
+        opacity: 1;
+    }
+
+    .news-content {
+        padding: 1rem;
+    }
+
+    .news-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .news-category {
+        color: var(--color-primary-yellow);
+        font-weight: 500;
+    }
+
+    .news-date {
+        color: var(--color-primary-silver);
+    }
+
+    .news-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        line-height: 1.4;
+    }
+
+    .news-excerpt {
+        color: var(--color-primary-silver);
+        font-size: 0.875rem;
+        line-height: 1.5;
+        margin-bottom: 1rem;
+    }
+
+    .news-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .news-read-more {
+        color: var(--color-primary-blue);
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.2s ease;
+    }
+
+    .news-read-more:hover {
+        color: var(--color-primary-purple);
+    }
+
+    .news-source {
+        color: var(--color-primary-silver);
+        font-size: 0.875rem;
+    }
+
+    .news-loading {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 200px;
+    }
+
+    .news-spinner {
+        width: 3rem;
+        height: 3rem;
+        border: 3px solid var(--color-primary-purple);
+        border-top-color: transparent;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .news-category-select {
+        position: relative;
+        min-width: 200px;
+    }
+
+    .news-category-select select {
+        appearance: none;
+        width: 100%;
+        padding: 0.5rem 2rem 0.5rem 1rem;
+        background-color: var(--color-bg--300);
+        border: 1px solid var(--color-primary-purple);
+        color: white;
+        border-radius: 0.5rem;
+        cursor: pointer;
+    }
+
+    .news-category-select::after {
+        content: '';
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 0;
+        height: 0;
+        border-left: 5px solid transparent;
+        border-right: 5px solid transparent;
+        border-top: 5px solid white;
+        pointer-events: none;
+    }
+
+    /* Load More Button */
+    .news-load-more {
+        display: inline-block;
+        padding: 0.75rem 1.5rem;
+        background-color: var(--color-primary-purple);
+        color: white;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        transition: background-color 0.2s ease;
+    }
+
+    .news-load-more:hover {
+        background-color: var(--color-primary-blue);
     }
 
 </style>
