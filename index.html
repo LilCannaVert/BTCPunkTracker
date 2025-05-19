@@ -1300,7 +1300,7 @@
                 },
                 showPortfolioDropdown: false,
                 filteredPortfolioCoins: [],
-                portfolioPositions: JSON.parse(localStorage.getItem('portfolioPositions')) || [],
+                portfolioPositions: [],
                 totalInvestment: 0,
                 currentValue: 0,
                 totalProfit: 0,
@@ -1853,19 +1853,27 @@
                 this.showPortfolioDropdown = false;
             },
             addPortfolioPosition() {
+                console.log('addPortfolioPosition called');
                 if (!this.portfolioForm.selectedCoin || !this.portfolioForm.amount || !this.portfolioForm.buyPrice) {
                     alert('Please fill in all fields');
+                    console.warn('addPortfolioPosition stopped: form fields missing.');
                     return;
                 }
 
                 const newPosition = {
                     symbol: this.portfolioForm.selectedCoin.symbol,
+                    pair: this.portfolioForm.selectedCoin.pair,
                     amount: parseFloat(this.portfolioForm.amount),
                     buyPrice: parseFloat(this.portfolioForm.buyPrice)
                 };
 
+                console.log('New position created:', newPosition);
+
                 this.portfolioPositions.push(newPosition);
-                localStorage.setItem('portfolioPositions', JSON.stringify(this.portfolioPositions));
+                console.log('portfolioPositions array after push:', JSON.parse(JSON.stringify(this.portfolioPositions)));
+
+                this.saveState();
+                console.log('saveState called after adding position.');
 
                 this.portfolioForm.selectedCoin = null;
                 this.portfolioForm.amount = '';
@@ -1873,121 +1881,166 @@
                 this.portfolioForm.searchQuery = '';
                 this.showPortfolioDropdown = false;
 
-                this.updatePortfolioTotals();
+                console.log('updatePortfolioTotals will be called by interval or ticker update.');
             },
             removePortfolioPosition(index) {
-                this.portfolioPositions.splice(index, 1);
-                localStorage.setItem('portfolioPositions', JSON.stringify(this.portfolioPositions));
-                this.updatePortfolioTotals();
+                console.log('removePortfolioPosition called for index:', index);
+                if (index >= 0 && index < this.portfolioPositions.length) {
+                    const removedPosition = this.portfolioPositions.splice(index, 1);
+                    console.log('Position removed:', removedPosition);
+                    console.log('portfolioPositions array after splice:', JSON.parse(JSON.stringify(this.portfolioPositions)));
+
+                    this.saveState();
+                    console.log('saveState called after removing position.');
+
+                    console.log('updatePortfolioTotals will be called by interval or ticker update.');
+                } else {
+                    console.warn('removePortfolioPosition: Invalid index', index);
+                }
             },
             saveState() {
+                console.log('saveState method called.');
                 try {
-
                     if (!Array.isArray(this.portfolioPositions)) {
-                        console.error('portfolioPositions is not an array:', this.portfolioPositions);
+                        console.error('saveState: portfolioPositions is not an array:', this.portfolioPositions);
                         return;
                     }
-                    
-                    const portfolioState = this.portfolioPositions.map(pos => ({
+
+                    const portfolioStateToSave = this.portfolioPositions.map(pos => ({
                         symbol: pos.symbol,
                         pair: pos.pair,
-                        amount: parseFloat(pos.amount),  
+                        amount: parseFloat(pos.amount),
                         buyPrice: parseFloat(pos.buyPrice)
                     }));
-                    
-                    localStorage.setItem('portfolioState', JSON.stringify(portfolioState));
-                    console.log('Portfolio state saved with', portfolioState.length, 'positions:', portfolioState);
-                } catch (error) {
-                    console.error('Error saving portfolio state:', error);
+
+                    const dataToSave = JSON.stringify(portfolioStateToSave);
+                    console.log('Attempting to save to localStorage with key "portfolioState":', dataToSave);
+                    localStorage.setItem('portfolioState', dataToSave);
+
+                    const savedDataCheck = localStorage.getItem('portfolioState');
+                    console.log('Confirmed data in localStorage immediately after setItem:', savedDataCheck);
+
+                    console.log('localStorage.setItem called successfully in saveState.');
+
+                } catch (e) {
+                    console.error('Error saving portfolioState to localStorage:', e);
                 }
             },
             loadState() {
+                 console.log('loadState method called.');
                 try {
                     const savedState = localStorage.getItem('portfolioState');
+                    console.log('Attempting to load portfolioState from localStorage. Raw data:', savedState);
                     if (savedState) {
                         try {
                             const positions = JSON.parse(savedState);
-                            
+
                             if (!Array.isArray(positions)) {
-                                console.error('Saved portfolio data is not an array:', positions);
+                                console.error('loadState: Parsed data from localStorage is not an array:', positions);
+                                this.portfolioPositions = []; // Сбрасываем, если данные некорректны
                                 return;
                             }
-                            
-                            if (positions.length > 0) {
-                                this.portfolioPositions = positions.map(pos => ({
-                                    symbol: pos.symbol,
-                                    pair: pos.pair,
-                                    amount: parseFloat(pos.amount),
-                                    buyPrice: parseFloat(pos.buyPrice),
-                                    currentPrice: 0,
-                                    currentValue: 0,
-                                    profit: 0,
-                                    profitPercent: 0
-                                }));
-                                
-                                console.log('Portfolio state loaded with', this.portfolioPositions.length, 'positions:', this.portfolioPositions);
-                                
-                                if (Object.keys(this.tickers).length > 0) {
-                                    console.log('Tickers available, updating portfolio calculations');
-                                    this.updatePortfolioTotals();
-                                } else {
-                                    console.log('Tickers not yet available, will update when received');
-                                }
+
+                            this.portfolioPositions = positions.map(pos => ({
+                                symbol: pos.symbol,
+                                pair: pos.pair,
+                                amount: parseFloat(pos.amount),
+                                buyPrice: parseFloat(pos.buyPrice),
+                                currentPrice: 0,
+                                currentValue: 0,
+                                profit: 0,
+                                profitPercent: 0
+                            }));
+
+                            console.log('Successfully loaded portfolioState:', this.portfolioPositions);
+
+                            if (Object.keys(this.tickers).length > 0) {
+                                console.log('Tickers available in loadState, calling updatePortfolioTotals.');
+                                this.updatePortfolioTotals();
                             } else {
-                                console.log('Saved portfolio state is empty array');
-                                this.portfolioPositions = [];
+                                console.log('Tickers not yet available in loadState, updatePortfolioTotals will run when tickers arrive.');
                             }
+
                         } catch (jsonError) {
-                            console.error('Error parsing saved portfolio state:', jsonError);
-                            this.portfolioPositions = [];
+                            console.error('loadState: Error parsing portfolioState from localStorage:', jsonError);
+                            this.portfolioPositions = []; // Сбрасываем при ошибке парсинга
                         }
                     } else {
-                        console.log('No saved portfolio state found in localStorage');
-                        this.portfolioPositions = [];
+                        console.log('No saved portfolioState found in localStorage.');
+                        this.portfolioPositions = []; // Сбрасываем, если нет сохраненных данных
                     }
                 } catch (error) {
-                    console.error('Error loading portfolio state:', error);
-                    this.portfolioPositions = [];
+                    console.error('loadState: Error accessing localStorage or during load process:', error);
+                     this.portfolioPositions = []; // Сбрасываем при ошибке доступа
                 }
             },
             updatePortfolioTotals() {
-                if (!this.portfolioPositions.length) return;
+                console.log('Updating portfolio totals...');
+                 console.log('portfolioPositions state at start of updatePortfolioTotals:', JSON.parse(JSON.stringify(this.portfolioPositions)));
+
+
+                if (!this.portfolioPositions.length) {
+                    console.log('Portfolio is empty. Resetting totals in memory.');
+                    this.totalInvestment = 0;
+                    this.currentValue = 0;
+                    this.totalProfit = 0;
+                    this.totalProfitPercent = 0;
+                    this.lastUpdate = Date.now();
+                    return;
+                }
 
                 let totalInvestment = 0;
                 let currentValue = 0;
+                 let tickersNotFound = false; // Флаг для отслеживания найденных тикеров
 
-                this.portfolioPositions = this.portfolioPositions.map(position => {
+                this.portfolioPositions.forEach((position, index) => {
                     const ticker = this.tickers[position.symbol];
                     if (ticker) {
                         const investment = position.amount * position.buyPrice;
                         const current = position.amount * parseFloat(ticker.close);
                         const profit = current - investment;
-                        const profitPercent = (profit / investment) * 100;
+                        const profitPercent = investment > 0 ? (profit / investment) * 100 : 0;
+
+                        position.currentPrice = parseFloat(ticker.close);
+                        position.currentValue = current;
+                        position.profit = profit;
+                        position.profitPercent = profitPercent;
+                        position.profitColor = profit >= 0 ? 'text-[--color-primary-green]' : 'text-[--color-primary--500]';
+                        position.profitSign = profit >= 0 ? '+' : '';
 
                         totalInvestment += investment;
                         currentValue += current;
 
-                        return {
-                            ...position,
-                            currentPrice: parseFloat(ticker.close),
-                            currentValue: current,
-                            profit: profit,
-                            profitPercent: profitPercent,
-                            profitColor: profit >= 0 ? 'text-[--color-primary-green]' : 'text-[--color-primary--500]',
-                            profitSign: profit >= 0 ? '+' : ''
-                        };
+                    } else {
+                         tickersNotFound = true; // Устанавливаем флаг, если тикер не найден
+                        console.warn(`Ticker not found for portfolio position ${index}: ${position.symbol}. Using last known values.`);
+                        const investment = position.amount * position.buyPrice;
+                        const lastKnownCurrentValue = position.currentValue !== undefined ? position.currentValue : investment;
+
+                        totalInvestment += investment;
+                        currentValue += lastKnownCurrentValue;
+
+                        position.currentPrice = 'N/A';
+                        position.currentValue = lastKnownCurrentValue;
+                        position.profit = lastKnownCurrentValue - investment;
+                        position.profitPercent = investment > 0 ? ((lastKnownCurrentValue - investment) / investment) * 100 : 0;
+                         position.profitColor = position.profit >= 0 ? 'text-[--color-primary-green]' : 'text-[--color-primary--500]';
+                        position.profitSign = position.profit >= 0 ? '+' : '';
                     }
-                    return position;
                 });
 
                 this.totalInvestment = totalInvestment;
                 this.currentValue = currentValue;
                 this.totalProfit = currentValue - totalInvestment;
-                this.totalProfitPercent = totalInvestment > 0 ? 
-                    ((currentValue - totalInvestment) / totalInvestment) * 100 : 0;
+                this.totalProfitPercent = totalInvestment > 0 ?
+                    ((this.currentValue - this.totalInvestment) / this.totalInvestment) * 100 : 0;
 
-                localStorage.setItem('portfolioPositions', JSON.stringify(this.portfolioPositions));
+                console.log(`updatePortfolioTotals: Calculated Totals: Investment=${this.totalInvestment.toFixed(2)}, Current=${this.currentValue.toFixed(2)}, Profit=${this.totalProfit.toFixed(2)}, Profit%=${this.totalProfitPercent.toFixed(2)}%`);
+
                 this.lastUpdate = Date.now();
+                 if(tickersNotFound) {
+                     console.warn("Some tickers were not found during updatePortfolioTotals. Displayed values might be outdated.");
+                 }
             },
             formatPortfolioNumber(number, decimals = 2) {
                 if (typeof number !== 'number') return '0.00';
@@ -2851,9 +2904,12 @@
 
             setInterval(() => {
                 if (this.portfolioPositions.length > 0 && Object.keys(this.tickers).length > 0) {
+                    console.log('Interval: Calling updatePortfolioTotals');
                     this.updatePortfolioTotals();
+                } else if (this.portfolioPositions.length > 0) {
+                    console.log('Interval: Tickers not yet available, cannot fully update portfolio totals.');
                 }
-            }, 1000);
+            }, 5000);
 
             window.addEventListener('click', this.handleClick);
 
@@ -2869,6 +2925,11 @@
             if (window.Telegram?.WebApp) {
                 this.tg = window.Telegram.WebApp;
                 console.log('Telegram WebApp initialized:', this.tg);
+            }
+
+            console.log('Mounted: Initial portfolioPositions length:', this.portfolioPositions.length);
+            if (this.portfolioPositions.length > 0) {
+                 console.log('Mounted: Initial portfolioPositions content:', JSON.parse(JSON.stringify(this.portfolioPositions)));
             }
         },
         beforeUnmount() {
