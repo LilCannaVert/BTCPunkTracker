@@ -84,7 +84,6 @@
             </button>
             </div>
             
-            <!-- Кнопка Contact и выпадающее меню -->
             <div class="flex items-center absolute top-0 left-1/2 transform -translate-x-1/2 z-50">
                 <button 
                     @click="toggleContactDropdown" 
@@ -1277,7 +1276,6 @@
                 showCalculator: false,
                 showPortfolio: false,
                 showNewsScreen: false,
-                // Добавляем переменную для выпадающего меню Contact
                 showContactDropdown: false,
                 newsItems: [],
                 newsLoading: false,
@@ -2504,9 +2502,58 @@
             },
             
             async lookupAddress() {
-                if (!this.btcAddressInput.trim()) {
+                if (!this.btcAddressInput || this.btcAddressInput.trim() === '') {
                     this.addressError = 'Please enter a Bitcoin address';
+                    return;
+                }
+
+                this.addressLoading = true;
+                this.addressError = null;
+                this.addressData = null;
+
+                try {
+                    const addressResponse = await fetch(`https://mempool.space/api/address/${this.btcAddressInput.trim()}`);
+                    console.log('Address lookup response status:', addressResponse.status);
+
+                    if (!addressResponse.ok) {
+                        let errorText = `Ошибка HTTP: статус ${addressResponse.status}`;
+                        try {
+                            const errorData = await addressResponse.json();
+                            if (errorData && errorData.error) {
+                                errorText += ` - ${errorData.error}`;
+                            } else if (typeof errorData === 'string') {
+                                errorText += ` - ${errorData}`;
+                            } else if (errorData) {
+                                errorText += ` - ${JSON.stringify(errorData)}`;
+                            }
+                        } catch (parseError) {
+                            console.warn('Failed to parse error response body as JSON/String:', parseError);
+                        }
+                        if (addressResponse.status === 404) {
+                            errorText = `Адрес Bitcoin "${this.btcAddressInput.trim()}" не найден или не имеет транзакций. Пожалуйста, проверьте адрес.`;
+                        } else if (addressResponse.status === 400) {
+                            errorText = `Ошибка запроса (400 Bad Request). Возможно, неверный формат адреса: "${this.btcAddressInput.trim()}".`;
+                        }
+
+                        this.addressError = errorText;
+                        console.error('Address lookup failed with HTTP error:', addressResponse.status, errorText);
+                        this.addressData = null;
+                        return;
+                    }
+
+                    const data = await addressResponse.json();
+                    console.log('Address data loaded successfully:', data);
+
+                    this.addressData = data;
+                    this.addressError = null;
+
+                } catch (error) {
+                    console.error('Error during address lookup fetch operation:', error);
+                    this.addressError = 'Ошибка при выполнении запроса (возможно, проблема с сетью или CORS): ' + error.message;
+                    this.addressData = null;
+                } finally {
                     this.addressLoading = false;
+                    console.log('Address lookup attempt finished.');
                 }
             },
             
@@ -2740,13 +2787,10 @@
                 if (window.Telegram?.WebApp) {
                     console.log('Telegram WebApp object is available.');
                     
-                    // Проверяем, является ли ссылка на профиль/канал Telegram (t.me)
                     if (url.startsWith('https://t.me/') || url.startsWith('tg://')) {
                          console.log('URL is a Telegram link, using openTelegramLink.');
                          window.Telegram.WebApp.openTelegramLink(url);
                     } else {
-                        // Для обычных HTTP/HTTPS ссылок (новости), используем openLink
-                        // Явно указываем force_external: false для открытия во встроенном браузере
                         console.log('URL is a regular web link, using openLink with force_external: false.');
                         window.Telegram.WebApp.openLink(url, { force_external: false });
                     }
@@ -2756,9 +2800,37 @@
                     window.open(url, '_blank');
                 }
             },
-            // Метод для переключения видимости выпадающего меню Contact
             toggleContactDropdown() {
                 this.showContactDropdown = !this.showContactDropdown;
+            },
+            async lookupBtcAddress() {
+                if (!this.btcAddressInput || this.btcAddressInput.trim() === '') {
+                    this.addressError = 'Please enter a Bitcoin address';
+                    return;
+                }
+
+                this.addressLoading = true;
+                this.addressError = null;
+                this.addressData = null;
+
+                try {
+                    // Fetch address data
+                    const addressResponse = await fetch(`https://mempool.space/api/address/${this.btcAddressInput.trim()}`);
+                    console.log('Address lookup response status:', addressResponse.status);
+
+                    if (!addressResponse.ok) {
+                        throw new Error(`HTTP error! status: ${addressResponse.status}`);
+                    }
+
+                    const addressData = await addressResponse.json();
+                    console.log('Address data loaded:', addressData);
+                    this.addressData = addressData; // Присваивание полученных данных
+                } catch (error) {
+                    console.error('Error looking up address:', error);
+                    this.addressError = 'Error looking up address: ' + error.message;
+                } finally {
+                    this.addressLoading = false;
+                }
             },
         },
         mounted() {
@@ -3700,7 +3772,6 @@
         pointer-events: none;
     }
 
-    /* Load More Button */
     .news-load-more {
         display: inline-block;
         padding: 0.75rem 1.5rem;
